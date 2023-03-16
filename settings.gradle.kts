@@ -15,5 +15,6 @@ dependencyResolutionManagement {
     }
 }
 include(":app")
-//include(":opengl_pixel_shader")
+include(":opengl_pixel_shader")
 include(":smooth_progress_indication")
+include(":common")

@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "de.drick.compose.progress_indication"
+    namespace = "de.drick.compose.opengl"
     compileSdk = Versions.compileSdk
     buildToolsVersion = Versions.buildToolsVersion
 
@@ -47,13 +47,16 @@ android {
 
 dependencies {
 
+    implementation(project(":common"))
+
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:${Versions.lifecycle}")
+
     // Compose
     val composeBom = platform("androidx.compose:compose-bom:${Versions.compoiseBom}")
     implementation(composeBom)
     androidTestImplementation(composeBom)
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.foundation:foundation")
-    implementation("androidx.compose.animation:animation")
     implementation("androidx.compose.ui:ui-tooling-preview")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
@@ -61,15 +64,13 @@ dependencies {
     testImplementation("junit:junit:${Versions.junit}")
     androidTestImplementation("androidx.test.ext:junit:${Versions.extJunit}")
     androidTestImplementation("androidx.test.espresso:espresso-core:${Versions.espresso}")
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
 
 publishing {
     publications {
         register<MavenPublication>("release") {
             groupId = "de.drick.compose"
-            artifactId = "progress-indication"
+            artifactId = "opengl"
             version = "0.1"
 
             afterEvaluate {
@@ -79,7 +80,7 @@ publishing {
     }
     repositories {
         maven { //Local directory
-            name = "progress-indication"
+            name = "opengl"
             url = uri("${project.rootDir}/repo")
         }
         //TODO github maven repo upload

@@ -46,8 +46,8 @@ android {
 }
 
 dependencies {
-
-    //implementation(project(":opengl_pixel_shader"))
+    implementation(project(":common"))
+    implementation(project(":opengl_pixel_shader"))
     implementation(project(":smooth_progress_indication"))
 
 
