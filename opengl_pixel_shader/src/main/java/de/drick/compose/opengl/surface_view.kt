@@ -11,7 +11,7 @@ import javax.microedition.khronos.egl.EGLContext
 import javax.microedition.khronos.egl.EGLDisplay
 
 @SuppressLint("ViewConstructor")
-class ShaderGLSurfaceView @JvmOverloads constructor(
+class RenderSurfaceView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     renderer: Renderer,
@@ -27,7 +27,6 @@ class ShaderGLSurfaceView @JvmOverloads constructor(
 
         renderMode = RENDERMODE_WHEN_DIRTY
         preserveEGLContextOnPause = true
-
     }
 
     override fun onResume() {

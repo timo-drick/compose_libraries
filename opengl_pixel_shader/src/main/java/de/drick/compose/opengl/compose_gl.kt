@@ -1,5 +1,6 @@
 package de.drick.compose.opengl
 
+import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.os.Process
 import androidx.compose.runtime.Composable
@@ -25,7 +26,26 @@ interface GLDsl {
     fun onDestroy(block: () -> Unit)
 }
 
+val simpleOpenGlRenderer = GLRenderer {
+    log("Clear view")
+    GLES20.glClearColor(1f, 0f, 1f, 1f)
+
+    onDrawFrame {
+        log("render frame")
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+    }
+    onSurfaceChanged { width, height ->
+        log("size: $width,$height")
+        GLES20.glViewport(0, 0, width, height)
+    }
+}
+
 class GLRenderer(glBlock: GLDsl.() -> Unit) {
+
+    internal var requestGlRender: () -> Unit = {}
+    fun requestRender() {
+        requestGlRender()
+    }
     fun onResume() {
 
     }
@@ -82,13 +102,19 @@ data class EGLSurfaceInfo(val egl: EGL10, val renderContext: EGLContext, val dis
 @Composable
 fun ComposeGl(
     modifier: Modifier = Modifier,
-    renderer: GLRenderer
+    renderer: GLRenderer,
+    key1: Any? = null
 ) {
-    var view: ShaderGLSurfaceView? = remember {
+    var view: RenderSurfaceView? = remember {
         null
     }
 
     val lifeCycleState = LocalLifecycleOwner.current.lifecycle
+
+    val k1 = remember(key1) {
+        view?.requestRender()
+        null
+    }
 
     DisposableEffect(lifeCycleState) {
         val observer = LifecycleEventObserver { _, event ->
@@ -109,6 +135,7 @@ fun ComposeGl(
 
         onDispose {
             log("View Disposed ${view.hashCode()}")
+            renderer.requestGlRender = {}
             lifeCycleState.removeObserver(observer)
             view?.onPause()
             view = null
@@ -117,9 +144,14 @@ fun ComposeGl(
 
     AndroidView(modifier = modifier,
         factory = {
-            ShaderGLSurfaceView(it, null, renderer.renderer)
-        }) { glSurfaceView ->
-        view = glSurfaceView
-        glSurfaceView.debugFlags = GLSurfaceView.DEBUG_CHECK_GL_ERROR or GLSurfaceView.DEBUG_LOG_GL_CALLS
-    }
+            RenderSurfaceView(it, null, renderer.renderer)
+        },
+        update = { glSurfaceView ->
+            view = glSurfaceView
+            glSurfaceView.debugFlags = GLSurfaceView.DEBUG_CHECK_GL_ERROR or GLSurfaceView.DEBUG_LOG_GL_CALLS
+            renderer.requestGlRender = {
+                glSurfaceView.requestRender()
+            }
+        }
+    )
 }
