@@ -1,8 +1,8 @@
 package de.drick.compose.opengl
 
 import android.opengl.GLES20
+import androidx.compose.ui.graphics.Color
 import de.drick.common.log
-import de.drick.compose.opengl.GLRenderer
 import org.intellij.lang.annotations.Language
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -18,7 +18,7 @@ val simpleFragmentShader = """
     
     void main() {
         // Normalized pixel coordinates (from 0 to 1)
-        vec2 uv = fragCoord/iResolution.xy;
+        vec2 uv = fragCoord*iResolution.x/iResolution.y;
     
         // Time varying pixel color
         vec3 col = 0.5 + 0.5*cos(uv.xyx+vec3(0,2,4));
@@ -28,24 +28,9 @@ val simpleFragmentShader = """
     }
 """.trimIndent()
 
-interface UniformDSL {
-    fun setFloatUniform(name: String, value1: Float) {
-        setFloatUniform(name, arrayOf(value1))
-    }
-    fun setFloatUniform(name: String, value1: Float, value2: Float) {
-        setFloatUniform(name, arrayOf(value1, value2))
-    }
-    fun setFloatUniform(name: String, value1: Float, value2: Float, value3: Float) {
-        setFloatUniform(name, arrayOf(value1, value2, value3))
-    }
-    fun setFloatUniform(name: String, values: Array<Float>)
-
-    fun setIntUniform(name: String, value1: Int) {
-        setIntUniform(name, arrayOf(value1))
-    }
-    fun setIntUniform(name: String, values: Array<Int>)
-}
-
+/**
+ * Shader that uses a rectangular geometry which
+ */
 class PixelShader(
     private val fragmentShaderSrc: String = simpleFragmentShader
 ) {
@@ -61,7 +46,6 @@ class PixelShader(
     """
 
     private val positionComponentCount = 2
-
     private val quadVertices by lazy {
         floatArrayOf(
             -1f, 1f,
@@ -70,9 +54,7 @@ class PixelShader(
             1f, -1f
         )
     }
-
     private val bytesPerFloat = 4
-
     private val verticesData by lazy {
         ByteBuffer.allocateDirect(quadVertices.size * bytesPerFloat)
             .order(ByteOrder.nativeOrder()).asFloatBuffer().also {
@@ -96,6 +78,18 @@ class PixelShader(
         registerUniform(name)
         uniformIntValues[name] = values
         renderer.requestRender()
+    }
+    fun setFloatUniform(name: String, value1: Float) {
+        setFloatUniform(name, arrayOf(value1))
+    }
+    fun setFloatUniform(name: String, value1: Float, value2: Float) {
+        setFloatUniform(name, arrayOf(value1, value2))
+    }
+    fun setFloatUniform(name: String, value1: Float, value2: Float, value3: Float) {
+        setFloatUniform(name, arrayOf(value1, value2, value3))
+    }
+    fun setColorUniform(name: String, color: Color) {
+        setFloatUniform(name, arrayOf(color.red, color.green, color.blue, color.alpha))
     }
     private fun setFloatUniform(name: String, values: Array<Float>) {
         registerUniform(name)
@@ -210,9 +204,9 @@ class PixelShader(
 
         val compileStatusArray = IntArray(1)
         GLES20.glGetShaderiv(shaderId, GLES20.GL_COMPILE_STATUS, compileStatusArray, 0)
-        log("$shaderCode \n : ${GLES20.glGetShaderInfoLog(shaderId)}")
 
         if (compileStatusArray.first() == 0) {
+            log("$shaderCode \n : ${GLES20.glGetShaderInfoLog(shaderId)}")
             GLES20.glDeleteShader(shaderId)
             throw IllegalStateException("Shader compilation failed!")
         }
@@ -224,16 +218,17 @@ class PixelShader(
         GLES20.glValidateProgram(programObjectId)
         val validateStatus = IntArray(1)
         GLES20.glGetProgramiv(programObjectId, GLES20.GL_VALIDATE_STATUS, validateStatus, 0)
-
-        log(
-            "Results of validating:" +
-                    "${validateStatus[0]} \n  Log : ${
-                        GLES20.glGetProgramInfoLog(
-                            programObjectId
-                        )
-                    } \n".trimIndent()
-        )
-
-        return validateStatus[0] != 0
+        val valid = validateStatus[0] != 0
+        if (valid.not()) {
+            log(
+                "Results of validating:" +
+                        "${validateStatus[0]} \n  Log : ${
+                            GLES20.glGetProgramInfoLog(
+                                programObjectId
+                            )
+                        } \n".trimIndent()
+            )
+        }
+        return valid
     }
 }
