@@ -19,7 +19,6 @@ import de.drick.compose.sample.BuildConfig
 import de.wurst.formularwizardchallenge.ui.theme.FormularTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.intellij.lang.annotations.Language
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,12 +44,15 @@ fun MainScreen() {
     // A surface container using the 'background' color from the theme
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        //containerColor = Color(1.0f, 0.569f, 0.141f, 1.0f)
     ) { padding ->
-        PixelShaderSamples()
-        ProgressOverlay(isVisible = isLoading, progressIndication = { CircularProgressIndicator() })
+        //PixelShaderSamples()
+        ProgressOverlay(isVisible = isLoading, progressIndication = { LoadingSpinner()})
         Column(
             modifier = Modifier
+                .fillMaxSize()
+                .noiseBackground()
                 .padding(padding)
         ) {
             Button(

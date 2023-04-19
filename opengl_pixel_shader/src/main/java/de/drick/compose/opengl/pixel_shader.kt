@@ -28,22 +28,49 @@ val simpleFragmentShader = """
     }
 """.trimIndent()
 
+
 /**
  * Shader that uses a rectangular geometry which
  */
 class PixelShader(
-    private val fragmentShaderSrc: String = simpleFragmentShader
+    agslShaderSrc: String = simpleFragmentShader
 ) {
+    private val agslPrefix = "AGSLXXYY"
+
     @Language("GLSL")
     val vertexSource = """
     attribute vec4 vPosition;
-    varying vec2 fragCoord;
+    varying vec2 fragCoord$agslPrefix;
+    uniform vec2 iResolution;
     void main() {
        gl_Position = vPosition;
-       vec2 texPos = vec2(vPosition.x, vPosition.y) / 2.0 + 0.5;
-       fragCoord = texPos;
+       vec2 texPos = vec2(vPosition.x, -vPosition.y) / 2.0 + .5;
+       fragCoord$agslPrefix = texPos * iResolution;
     }
     """
+
+    private val fragmentShaderSrc = createGLSLCode(agslShaderSrc)
+
+    private fun createGLSLCode(agslSrc: String): String {
+        val converted = agslSrc
+            .replace("half2", "vec2")
+            .replace("half3", "vec3")
+            .replace("half4", "vec4")
+            .replace("float2", "vec2")
+            .replace("float3", "vec3")
+            .replace("float4", "vec4")
+            .replace("main(", "main$agslPrefix(")
+        @Language("GLSL")
+        val tmp = converted + """
+        varying vec2  fragCoord$agslPrefix;
+        
+        void main() {
+            vec2 agslCoord = fragCoord$agslPrefix;
+            gl_FragColor = main$agslPrefix(agslCoord);
+        }
+    """.trimIndent()
+        return tmp
+    }
 
     private val positionComponentCount = 2
     private val quadVertices by lazy {

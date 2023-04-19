@@ -23,10 +23,6 @@ compose {
     kotlinCompilerPlugin.set("androidx.compose.compiler:compiler:1.4.4")
 }
 
-/*tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "11"
-}*/
-
 compose.desktop {
     application {
         mainClass = "MainKt"
