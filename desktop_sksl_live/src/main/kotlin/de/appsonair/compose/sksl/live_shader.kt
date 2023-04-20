@@ -25,7 +25,7 @@ fun rememberLiveEffect(file: File): RuntimeEffect {
             mutableStateOf(RuntimeEffect.makeForShader(source))
         } catch (err: Throwable) {
             println(err.message)
-            err.printStackTrace()
+            //err.printStackTrace()
             mutableStateOf(
                 RuntimeEffect.makeForShader("""
                 half4 main(vec2 fragcoord) {
@@ -51,7 +51,12 @@ fun Modifier.skslBackground(
         val shader = builder.makeShader()
         val brush = ShaderBrush(shader)
         onDrawBehind {
-            drawRect(brush = brush, topLeft = Offset.Zero, size = size)
+            drawRect(
+                brush = brush,
+                topLeft = Offset.Zero,
+                size = size,
+                //blendMode = BlendMode.SrcOver
+            )
         }
     }
 }
