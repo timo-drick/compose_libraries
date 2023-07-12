@@ -29,29 +29,15 @@ class RenderSurfaceView @JvmOverloads constructor(
         preserveEGLContextOnPause = true
     }
 
-    override fun onResume() {
-        super.onResume()
-        log("onResume")
-    }
-
-    override fun onPause() {
-        super.onPause()
-        log("onPause")
-    }
-
-    override fun onDetachedFromWindow() {
-        super.onDetachedFromWindow()
-        log("ShaderGLSurfaceView onDetachedFromWindow")
-    }
 }
 
 private class ContextFactory : GLSurfaceView.EGLContextFactory {
     private val EGL_CONTEXT_CLIENT_VERSION = 0x3098
 
     override fun createContext(egl: EGL10, display: EGLDisplay, eglConfig: EGLConfig): EGLContext {
-        log("creating OpenGL ES 2.0 context")
+        log("creating OpenGL ES context")
         checkEglError("Before eglCreateContext", egl)
-        val attrib_list = intArrayOf(EGL_CONTEXT_CLIENT_VERSION, 2, EGL10.EGL_NONE)
+        val attrib_list = intArrayOf(EGL_CONTEXT_CLIENT_VERSION, 3, EGL10.EGL_NONE)
         val context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, attrib_list)
         checkEglError("After eglCreateContext", egl)
         //eglSurfaceInfo = EGLSurfaceInfo(egl, this@GL2View, context, display, eglConfig)
@@ -59,7 +45,7 @@ private class ContextFactory : GLSurfaceView.EGLContextFactory {
     }
 
     override fun destroyContext(egl: EGL10, display: EGLDisplay, context: EGLContext) {
-        log("destroy OpenGL ES 2.0 context")
+        log("destroy OpenGL ES context")
         egl.eglDestroyContext(display, context)
         //eglSurfaceInfo = null
     }

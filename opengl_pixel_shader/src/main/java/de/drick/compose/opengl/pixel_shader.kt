@@ -1,6 +1,7 @@
 package de.drick.compose.opengl
 
-import android.opengl.GLES20
+import android.opengl.GLES10
+import android.opengl.GLES31
 import androidx.compose.ui.graphics.Color
 import de.drick.common.log
 import org.intellij.lang.annotations.Language
@@ -33,7 +34,8 @@ val simpleFragmentShader = """
  * Shader that uses a rectangular geometry which
  */
 class PixelShader(
-    agslShaderSrc: String = simpleFragmentShader
+    agslShaderSrc: String = simpleFragmentShader,
+    onErrorFallback: () -> Unit = {}
 ) {
     private val agslPrefix = "AGSLXXYY"
 
@@ -61,7 +63,11 @@ class PixelShader(
             .replace("float4", "vec4")
             .replace("main(", "main$agslPrefix(")
         @Language("GLSL")
-        val tmp = converted + """
+        val tmp = """
+        precision highp float;
+        
+        $converted
+        
         varying vec2  fragCoord$agslPrefix;
         
         void main() {
@@ -124,78 +130,78 @@ class PixelShader(
         renderer.requestRender()
     }
 
-    val renderer = GLRenderer {
-        GLES20.glClearColor(0f, 0f, 0f, 1f)
-        GLES20.glDisable(GL10.GL_DITHER)
-        GLES20.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_FASTEST)
+    val renderer = GLRenderer(onErrorFallback = onErrorFallback) {
+        GLES31.glClearColor(0f, 0f, 0f, 1f)
+        GLES31.glDisable(GL10.GL_DITHER)
+        GLES31.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_FASTEST)
 
-        val programId = GLES20.glCreateProgram()
+        val programId = GLES31.glCreateProgram()
         require(programId > 0) { "Unable to create program!" }
-        val fragShader = createAndVerifyShader(fragmentShaderSrc, GLES20.GL_FRAGMENT_SHADER)
-        val vertShader = createAndVerifyShader(vertexSource, GLES20.GL_VERTEX_SHADER)
-        GLES20.glAttachShader(programId, fragShader)
-        GLES20.glAttachShader(programId, vertShader)
-        GLES20.glLinkProgram(programId)
+        val fragShader = createAndVerifyShader(fragmentShaderSrc, GLES31.GL_FRAGMENT_SHADER)
+        val vertShader = createAndVerifyShader(vertexSource, GLES31.GL_VERTEX_SHADER)
+        GLES31.glAttachShader(programId, fragShader)
+        GLES31.glAttachShader(programId, vertShader)
+        GLES31.glLinkProgram(programId)
 
         val linkStatus = IntArray(1)
-        GLES20.glGetProgramiv(programId, GLES20.GL_LINK_STATUS, linkStatus, 0)
+        GLES31.glGetProgramiv(programId, GLES31.GL_LINK_STATUS, linkStatus, 0)
         if (linkStatus[0] == 0) {
-            val msg = "Linking of program failed. ${GLES20.glGetProgramInfoLog(programId)}"
-            GLES20.glDeleteProgram(programId)
+            val msg = "Linking of program failed. ${GLES31.glGetProgramInfoLog(programId)}"
+            GLES31.glDeleteProgram(programId)
             throw IllegalStateException(msg)
         }
 
         if (validateProgram(programId).not()) throw IllegalStateException("Program validation failed!")
 
-        val attributeLocation = GLES20.glGetAttribLocation(programId, "vPosition")
+        val attributeLocation = GLES31.glGetAttribLocation(programId, "vPosition")
         uniforms.forEach { name -> // get location for uniforms
-            val loc = GLES20.glGetUniformLocation(programId, name)
+            val loc = GLES31.glGetUniformLocation(programId, name)
             uniformLocations[name] = loc
         }
 
-        val resolutionUniform = GLES20.glGetUniformLocation(programId, "iResolution")
+        val resolutionUniform = GLES31.glGetUniformLocation(programId, "iResolution")
 
         verticesData.position(0)
-        GLES20.glVertexAttribPointer(
+        GLES31.glVertexAttribPointer(
             attributeLocation,
             positionComponentCount,
-            GLES20.GL_FLOAT,
+            GLES31.GL_FLOAT,
             false,
             0,
             verticesData
         )
 
-        GLES20.glDetachShader(programId, vertShader)
-        GLES20.glDetachShader(programId, fragShader)
-        GLES20.glDeleteShader(vertShader)
-        GLES20.glDeleteShader(fragShader)
+        GLES31.glDetachShader(programId, vertShader)
+        GLES31.glDetachShader(programId, fragShader)
+        GLES31.glDeleteShader(vertShader)
+        GLES31.glDeleteShader(fragShader)
 
         var surfaceWidth = 0f
         var surfaceHeight = 0f
 
         onSurfaceChanged { width, height ->
-            GLES20.glViewport(0, 0, width, height)
+            GLES31.glViewport(0, 0, width, height)
             surfaceWidth = width.toFloat()
             surfaceHeight = height.toFloat()
         }
 
         var frameCount = 0
         onDrawFrame {
-            GLES20.glDisable(GL10.GL_DITHER)
-            GLES20.glClear(GL10.GL_COLOR_BUFFER_BIT)
+            GLES31.glDisable(GL10.GL_DITHER)
+            GLES31.glClear(GL10.GL_COLOR_BUFFER_BIT)
 
-            GLES20.glUseProgram(programId)
-            GLES20.glUniform2f(resolutionUniform, surfaceWidth, surfaceHeight)
+            GLES31.glUseProgram(programId)
+            GLES31.glUniform2f(resolutionUniform, surfaceWidth, surfaceHeight)
 
             //set int uniforms
             uniformIntValues.forEach { (name, values) ->
                 uniformLocations[name]?.let { loc ->
                     //println("setUniform($name, ${values.joinToString()}) pos: $loc")
                     when (values.size) {
-                        1 -> GLES20.glUniform1i(loc, values[0])
-                        2 -> GLES20.glUniform2i(loc, values[0], values[1])
-                        3 -> GLES20.glUniform3i(loc, values[0], values[1], values[2])
-                        4 -> GLES20.glUniform4i(loc, values[0], values[1], values[2], values[3])
+                        1 -> GLES31.glUniform1i(loc, values[0])
+                        2 -> GLES31.glUniform2i(loc, values[0], values[1])
+                        3 -> GLES31.glUniform3i(loc, values[0], values[1], values[2])
+                        4 -> GLES31.glUniform4i(loc, values[0], values[1], values[2], values[3])
                         else -> throw IllegalStateException("Wrong number of values! : ${values.size}")
                     }
                 }
@@ -204,10 +210,10 @@ class PixelShader(
                 uniformLocations[name]?.let { loc ->
                     //println("setUniform($name, ${values.joinToString()}) pos: $loc")
                     when (values.size) {
-                        1 -> GLES20.glUniform1f(loc, values[0])
-                        2 -> GLES20.glUniform2f(loc, values[0], values[1])
-                        3 -> GLES20.glUniform3f(loc, values[0], values[1], values[2])
-                        4 -> GLES20.glUniform4f(loc, values[0], values[1], values[2], values[3])
+                        1 -> GLES31.glUniform1f(loc, values[0])
+                        2 -> GLES31.glUniform2f(loc, values[0], values[1])
+                        3 -> GLES31.glUniform3f(loc, values[0], values[1], values[2])
+                        4 -> GLES31.glUniform4f(loc, values[0], values[1], values[2], values[3])
                         else -> throw IllegalStateException("Wrong number of values! : ${values.size}")
                     }
                 }
@@ -215,26 +221,29 @@ class PixelShader(
 
             //println("draw frame")
 
-            GLES20.glEnableVertexAttribArray(attributeLocation)
-            GLES20.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4)
-            GLES20.glDisableVertexAttribArray(attributeLocation)
+            GLES31.glEnableVertexAttribArray(attributeLocation)
+            GLES31.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4)
+            GLES31.glDisableVertexAttribArray(attributeLocation)
             frameCount++
         }
     }
 
     private fun createAndVerifyShader(shaderCode: String, shaderType: Int): Int {
-        val shaderId = GLES20.glCreateShader(shaderType)
+        val version = GLES10.glGetString(GL10.GL_VERSION)
+        log("opengl version: $version")
+
+        val shaderId = GLES31.glCreateShader(shaderType)
         check(shaderId > 0) { "Unable to create shader!" }
 
-        GLES20.glShaderSource(shaderId, shaderCode)
-        GLES20.glCompileShader(shaderId)
+        GLES31.glShaderSource(shaderId, shaderCode)
+        GLES31.glCompileShader(shaderId)
 
         val compileStatusArray = IntArray(1)
-        GLES20.glGetShaderiv(shaderId, GLES20.GL_COMPILE_STATUS, compileStatusArray, 0)
+        GLES31.glGetShaderiv(shaderId, GLES31.GL_COMPILE_STATUS, compileStatusArray, 0)
 
         if (compileStatusArray.first() == 0) {
-            log("$shaderCode \n : ${GLES20.glGetShaderInfoLog(shaderId)}")
-            GLES20.glDeleteShader(shaderId)
+            log("$shaderCode \n : ${GLES31.glGetShaderInfoLog(shaderId)}")
+            GLES31.glDeleteShader(shaderId)
             throw IllegalStateException("Shader compilation failed!")
         }
 
@@ -242,15 +251,15 @@ class PixelShader(
     }
 
     private fun validateProgram(programObjectId: Int): Boolean {
-        GLES20.glValidateProgram(programObjectId)
+        GLES31.glValidateProgram(programObjectId)
         val validateStatus = IntArray(1)
-        GLES20.glGetProgramiv(programObjectId, GLES20.GL_VALIDATE_STATUS, validateStatus, 0)
+        GLES31.glGetProgramiv(programObjectId, GLES31.GL_VALIDATE_STATUS, validateStatus, 0)
         val valid = validateStatus[0] != 0
         if (valid.not()) {
             log(
                 "Results of validating:" +
                         "${validateStatus[0]} \n  Log : ${
-                            GLES20.glGetProgramInfoLog(
+                            GLES31.glGetProgramInfoLog(
                                 programObjectId
                             )
                         } \n".trimIndent()

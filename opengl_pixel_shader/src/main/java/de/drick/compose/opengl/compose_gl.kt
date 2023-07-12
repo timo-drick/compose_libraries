@@ -26,7 +26,7 @@ interface GLDsl {
     fun onDestroy(block: () -> Unit)
 }
 
-val simpleOpenGlRenderer = GLRenderer {
+val simpleOpenGlRenderer = GLRenderer({}) {
     log("Clear view")
     GLES20.glClearColor(1f, 0f, 1f, 1f)
 
@@ -40,7 +40,7 @@ val simpleOpenGlRenderer = GLRenderer {
     }
 }
 
-class GLRenderer(glBlock: GLDsl.() -> Unit) {
+class GLRenderer(onErrorFallback: () -> Unit, glBlock: GLDsl.() -> Unit) {
 
     internal var requestGlRender: () -> Unit = {}
     fun requestRender() {
@@ -80,7 +80,12 @@ class GLRenderer(glBlock: GLDsl.() -> Unit) {
             val egl = EGLContext.getEGL() as EGL10
             //val eglSurfaceInfo = EGLSurfaceInfo(egl, egl.eglGetCurrentContext(), egl.eglGetCurrentDisplay(), config)
             dsl = DslImpl(config).also { dsl ->
-                glBlock(dsl)
+                try {
+                    glBlock(dsl)
+                } catch (err: Throwable) {
+                    log(err)
+                    onErrorFallback()
+                }
             }
         }
 
