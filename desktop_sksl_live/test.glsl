@@ -5,6 +5,13 @@ uniform float iTime;
 layout(color) uniform vec4 background;
 layout(color) uniform vec4 primary;
 
+const float PI = 3.14159265359;
+
+mat2 rot(float a) {
+    float s=sin(a), c=cos(a);
+    return mat2(c, -s, s, c);
+}
+
 vec3 checkBoard(vec2 uv) {
     vec2 id = floor(uv);
     float w = fract((id.x + id.y)/2.) * 2.;
@@ -24,8 +31,17 @@ vec3 triangle(vec2 uv) {
     return col;
 }
 
+float sdBox(vec2 p, vec2 b) {
+    vec2 d = abs(p)-b;
+    return length(max(d,0.0)) + min(max(d.x,d.y),0.0);
+}
 
 half4 main(vec2 fragCoord) {
-    vec2 uv = fragCoord / (400. * iDensity) ;
-    return vec4(triangle(uv*10.), 1);
+    vec2 centerPos = vec2(100,100);
+    fragCoord -= centerPos; // Move 0,0 to center
+    float angleRad = PI * 2.0 * iTime;
+    fragCoord *= rot(angleRad); // rotate 45 degree
+    fragCoord += centerPos; // Move 0,0 to left, top
+    float d = sdBox(fragCoord - centerPos, vec2(100, 30));
+    return vec4(vec3(d),1);
 }

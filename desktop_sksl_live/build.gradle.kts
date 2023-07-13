@@ -2,7 +2,7 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
     kotlin("jvm")
-    id("org.jetbrains.compose") version "1.4.0-alpha01-dev1004"//"1.3.1"
+    id("org.jetbrains.compose") version "1.4.0"//"1.5.0-dev1035"
 }
 
 group = "de.appsonair.compose.sksl"
@@ -20,7 +20,7 @@ kotlin {
 }
 
 compose {
-    kotlinCompilerPlugin.set("androidx.compose.compiler:compiler:1.4.4")
+    kotlinCompilerPlugin.set("androidx.compose.compiler:compiler:${Versions.composeCompiler}")
 }
 
 compose.desktop {

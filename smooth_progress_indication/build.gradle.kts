@@ -38,7 +38,7 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = Versions.composeCompiler
     }
-    packagingOptions {
+    packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
@@ -48,7 +48,7 @@ android {
 dependencies {
 
     // Compose
-    val composeBom = platform("androidx.compose:compose-bom:${Versions.compoiseBom}")
+    val composeBom = platform("androidx.compose:compose-bom:${Versions.composeBom}")
     implementation(composeBom)
     androidTestImplementation(composeBom)
     implementation("androidx.compose.ui:ui")

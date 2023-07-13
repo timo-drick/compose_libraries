@@ -9,23 +9,25 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import org.intellij.lang.annotations.Language
 
-@Preview
 @Composable
 fun PixelShaderSamples() {
     Column(Modifier.fillMaxSize()) {
-        PixelShaderSampleAGSL(Modifier
-            .weight(1f)
-            .fillMaxWidth())
-        PixelShaderSample1(Modifier
-            .weight(1f)
-            .fillMaxWidth())
+        BasicText(text = "AGSL Shaders run on opengl")
+        PixelShaderSampleAGSL(
+            Modifier
+                .weight(1f)
+                .fillMaxWidth())
+        PixelShaderSample1(
+            Modifier
+                .weight(1f)
+                .fillMaxWidth())
         PixelShaderSample2ColorUniform(modifier = Modifier
             .weight(1f)
             .fillMaxWidth())
@@ -117,10 +119,10 @@ fun PixelShaderSample3Gradient(modifier: Modifier) {
     val pixelShader = remember {
         PixelShader("""
     uniform float2 iResolution;
-   half4 main(float2 fragCoord) {
+    half4 main(float2 fragCoord) {
       float2 scaled = fragCoord/iResolution.xy;
       return half4(scaled, 0, 1);
-   }
+    }
 """)
     }
     pixelShader.setColorUniform("iColor", Color.Green)
@@ -146,13 +148,13 @@ fun PixelShaderSample4Animation(modifier: Modifier) {
 
     val pixelShader = remember {
         PixelShader("""
-    uniform float2 iResolution;
-   uniform float iTime;
-   uniform float iDuration;
-   half4 main(in float2 fragCoord) {
-      float2 scaled = abs(1.0-mod(fragCoord/iResolution.xy+iTime/(iDuration/2.0),2.0));
-      return half4(scaled, 0, 1.0);
-   }
+        uniform float2 iResolution;
+        uniform float iTime;
+        uniform float iDuration;
+        half4 main(in float2 fragCoord) {
+            float2 scaled = abs(1.0-mod(fragCoord/iResolution.xy+iTime/(iDuration/2.0),2.0));
+            return half4(scaled, 0, 1.0);
+        }
 """)
     }
     pixelShader.setFloatUniform("iDuration", DURATION)

@@ -10,14 +10,11 @@ import java.nio.ByteOrder
 import javax.microedition.khronos.opengles.GL10
 
 
-@Language("GLSL")
+@Language("AGSL")
 val simpleFragmentShader = """
-    precision mediump float;
-    
-    varying vec2  fragCoord;   // pixel coordinates
     uniform vec2  iResolution; // viewport resolution (in pixels)
     
-    void main() {
+    half4 main(vec2 fragCoord) {
         // Normalized pixel coordinates (from 0 to 1)
         vec2 uv = fragCoord*iResolution.x/iResolution.y;
     
@@ -25,7 +22,7 @@ val simpleFragmentShader = """
         vec3 col = 0.5 + 0.5*cos(uv.xyx+vec3(0,2,4));
     
         // Output to screen
-        gl_FragColor = vec4(col,1.0);
+        return half4(col,1.0);
     }
 """.trimIndent()
 
@@ -98,7 +95,12 @@ class PixelShader(
     private val uniforms = mutableSetOf<String>()
     private val uniformLocations = mutableMapOf<String, Int>()
     private val uniformIntValues = mutableMapOf<String, Array<Int>>()
-    private val uniformFloatValues = mutableMapOf<String, Array<Float>>()
+
+    data class FloatUniformType(
+        val vSize: Int,
+        val data: FloatArray
+    )
+    private val uniformFloatValues = mutableMapOf<String, FloatUniformType>()
 
     private fun registerUniform(name: String) {
         uniforms.add(name)
@@ -113,20 +115,29 @@ class PixelShader(
         renderer.requestRender()
     }
     fun setFloatUniform(name: String, value1: Float) {
-        setFloatUniform(name, arrayOf(value1))
+        setFloatUniform(name, 1, floatArrayOf(value1))
     }
     fun setFloatUniform(name: String, value1: Float, value2: Float) {
-        setFloatUniform(name, arrayOf(value1, value2))
+        setFloatUniform(name, 2, floatArrayOf(value1, value2))
     }
     fun setFloatUniform(name: String, value1: Float, value2: Float, value3: Float) {
-        setFloatUniform(name, arrayOf(value1, value2, value3))
+        setFloatUniform(name, 3, floatArrayOf(value1, value2, value3))
+    }
+    fun setFloatUniform(name: String, value1: Float, value2: Float, value3: Float, value4: Float) {
+        setFloatUniform(name, 4, floatArrayOf(value1, value2, value3, value4))
     }
     fun setColorUniform(name: String, color: Color) {
-        setFloatUniform(name, arrayOf(color.red, color.green, color.blue, color.alpha))
+        setFloatUniform(name, 4, floatArrayOf(color.red, color.green, color.blue, color.alpha))
     }
-    private fun setFloatUniform(name: String, values: Array<Float>) {
+    fun setFloatUniform1f(name: String, values: FloatArray) {
+        setFloatUniform(name, 1, values)
+    }
+    fun setFloatUniform3f(name: String, values: FloatArray) {
+        setFloatUniform(name, 3, values)
+    }
+    private fun setFloatUniform(name: String, vSize: Int, values: FloatArray) {
         registerUniform(name)
-        uniformFloatValues[name] = values
+        uniformFloatValues[name] = FloatUniformType(vSize, values)
         renderer.requestRender()
     }
 
@@ -206,15 +217,16 @@ class PixelShader(
                     }
                 }
             }
-            uniformFloatValues.forEach { (name, values) ->
+            uniformFloatValues.forEach { (name, type) ->
                 uniformLocations[name]?.let { loc ->
+                    val values = type.data
                     //println("setUniform($name, ${values.joinToString()}) pos: $loc")
-                    when (values.size) {
-                        1 -> GLES31.glUniform1f(loc, values[0])
-                        2 -> GLES31.glUniform2f(loc, values[0], values[1])
-                        3 -> GLES31.glUniform3f(loc, values[0], values[1], values[2])
-                        4 -> GLES31.glUniform4f(loc, values[0], values[1], values[2], values[3])
-                        else -> throw IllegalStateException("Wrong number of values! : ${values.size}")
+                    when (type.vSize) {
+                        1 -> GLES31.glUniform1fv(loc, values.size, values, 0)
+                        2 -> GLES31.glUniform2fv(loc, values.size / 2, values, 0)
+                        3 -> GLES31.glUniform3fv(loc, values.size / 3, values, 0)
+                        4 -> GLES31.glUniform4fv(loc, values.size / 4, values, 0)
+                        else -> throw IllegalStateException("Unsupported float vector size! in uniform: $name ${type.vSize}")
                     }
                 }
             }

@@ -1,5 +1,11 @@
 package de.appsonair.compose.sksl
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -11,19 +17,12 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.withContext
 import org.intellij.lang.annotations.Language
-import org.jetbrains.skia.RuntimeEffect
 import org.jetbrains.skia.RuntimeShaderBuilder
 import java.io.File
-import java.nio.file.FileSystems
-import java.nio.file.StandardWatchEventKinds
 import java.util.*
 
 @Language("AGSL")
@@ -81,7 +80,6 @@ val appsOnAirBackground = """
         
         return half4(col, 1.0);
     }
-    
 """.trimIndent()
 
 fun Modifier.aoaBackground(): Modifier = composed {
@@ -117,16 +115,17 @@ fun main() = application {
         state = state,
         onCloseRequest = ::exitApplication,
     ) {
-        /*val startNanos = remember { System.nanoTime() }
-        val time by produceState(0f) {
-            while (true) {
-                withInfiniteAnimationFrameNanos {
-                    value = (startNanos - it) / 100000000f
-                }
-            }
-        }*/
+        val infiniteTransition = rememberInfiniteTransition()
+        val time = infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(10000, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart,
+            )
+        )
         EbonTheme {
-            val file = File("/home/timo/projects/compose/github/rewe_ebon_analyzer/test.glsl")
+            val file = File("desktop_sksl_live/test.glsl")
             val background = MaterialTheme.colorScheme.background
             val primary = MaterialTheme.colorScheme.primary
             val effect = rememberLiveEffect(file)
@@ -135,18 +134,26 @@ fun main() = application {
                     //.background(background)
                     .skslBackground(
                         effect = effect,
+                        iTime = time.value,
                         uniforms = { builder ->
                             builder.uniformColor("background", background)
                             builder.uniformColor("primary", primary)
+                            builder.uniform("iDensity", 1f)
                         }
                     )
                 //.skslLiveBackground(file)
-            )
+            ) {
+                val spinnerEffect = rememberLiveEffect(File("desktop_sksl_live/arrow.glsl"))
+                Box(
+                    modifier = Modifier.align(Alignment.Center).fillMaxSize().skslBackground(spinnerEffect)
+                )
+
+            }
         }
     }
 }
 
 fun RuntimeShaderBuilder.uniformColor(name: String, color: Color) {
     val c = color.convert(ColorSpaces.ExtendedSrgb)
-    uniform(name, c.red, c.green, c.blue)
+    uniform(name, c.red, c.green, c.blue, 1f)
 }

@@ -3,9 +3,11 @@ package de.drick.compose.opengl
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.os.Process
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
@@ -104,6 +106,7 @@ class GLRenderer(onErrorFallback: () -> Unit, glBlock: GLDsl.() -> Unit) {
 data class EGLSurfaceInfo(val egl: EGL10, val renderContext: EGLContext, val display: EGLDisplay, val config: EGLConfig)
 
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ComposeGl(
     modifier: Modifier = Modifier,
@@ -146,17 +149,20 @@ fun ComposeGl(
             view = null
         }
     }
-
-    AndroidView(modifier = modifier,
-        factory = {
-            RenderSurfaceView(it, null, renderer.renderer)
-        },
-        update = { glSurfaceView ->
-            view = glSurfaceView
-            glSurfaceView.debugFlags = GLSurfaceView.DEBUG_CHECK_GL_ERROR or GLSurfaceView.DEBUG_LOG_GL_CALLS
-            renderer.requestGlRender = {
-                glSurfaceView.requestRender()
+    Box(modifier) {
+        AndroidView(
+            factory = {
+                log("factory")
+                RenderSurfaceView(it, null, renderer.renderer)
+            },
+            update = { glSurfaceView ->
+                view = glSurfaceView
+                glSurfaceView.debugFlags =
+                    GLSurfaceView.DEBUG_CHECK_GL_ERROR or GLSurfaceView.DEBUG_LOG_GL_CALLS
+                renderer.requestGlRender = {
+                    glSurfaceView.requestRender()
+                }
             }
-        }
-    )
+        )
+    }
 }

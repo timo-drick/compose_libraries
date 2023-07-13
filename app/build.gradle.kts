@@ -34,6 +34,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = Versions.composeCompiler
@@ -58,7 +59,7 @@ dependencies {
 
     // Compose
     implementation("androidx.activity:activity-compose:${Versions.activityCompose}")
-    val composeBom = platform("androidx.compose:compose-bom:${Versions.compoiseBom}")
+    val composeBom = platform("androidx.compose:compose-bom:${Versions.composeBom}")
     implementation(composeBom)
     androidTestImplementation(composeBom)
     implementation("androidx.compose.ui:ui")

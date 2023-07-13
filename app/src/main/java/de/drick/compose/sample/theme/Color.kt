@@ -1,4 +1,4 @@
-package de.wurst.formularwizardchallenge.ui.theme
+package de.drick.compose.sample.theme
 
 import androidx.compose.ui.graphics.Color
 

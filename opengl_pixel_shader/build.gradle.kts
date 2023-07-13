@@ -53,7 +53,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:${Versions.lifecycle}")
 
     // Compose
-    val composeBom = platform("androidx.compose:compose-bom:${Versions.compoiseBom}")
+    val composeBom = platform("androidx.compose:compose-bom:${Versions.composeBom}")
     implementation(composeBom)
     androidTestImplementation(composeBom)
     implementation("androidx.compose.ui:ui")
