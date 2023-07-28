@@ -153,15 +153,18 @@ fun ComposeGl(
         AndroidView(
             factory = {
                 log("factory")
-                RenderSurfaceView(it, null, renderer.renderer)
-            },
-            update = { glSurfaceView ->
-                view = glSurfaceView
+                val glSurfaceView = RenderSurfaceView(it, null, renderer.renderer)
+                glSurfaceView.setZOrderOnTop(true)
+                //glSurfaceView.setZOrderMediaOverlay(true)
                 glSurfaceView.debugFlags =
                     GLSurfaceView.DEBUG_CHECK_GL_ERROR or GLSurfaceView.DEBUG_LOG_GL_CALLS
+                view = glSurfaceView
                 renderer.requestGlRender = {
                     glSurfaceView.requestRender()
                 }
+                glSurfaceView
+            },
+            update = { _ ->
             }
         )
     }

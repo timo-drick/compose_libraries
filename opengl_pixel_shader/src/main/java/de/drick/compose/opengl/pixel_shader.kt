@@ -142,9 +142,10 @@ class PixelShader(
     }
 
     val renderer = GLRenderer(onErrorFallback = onErrorFallback) {
-        GLES31.glClearColor(0f, 0f, 0f, 1f)
+        GLES31.glClearColor(0f, 0f, 0f, 0f)
         GLES31.glDisable(GL10.GL_DITHER)
         GLES31.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_FASTEST)
+        GLES31.glEnable(GL10.GL_BLEND)
 
         val programId = GLES31.glCreateProgram()
         require(programId > 0) { "Unable to create program!" }
