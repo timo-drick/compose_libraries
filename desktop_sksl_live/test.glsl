@@ -1,35 +1,10 @@
-uniform float3 iResolution;
-uniform float iDensity;
+uniform float2 iResolution;
 uniform float iTime;
 
 layout(color) uniform vec4 background;
 layout(color) uniform vec4 primary;
 
-const float PI = 3.14159265359;
-
-mat2 rot(float a) {
-    float s=sin(a), c=cos(a);
-    return mat2(c, -s, s, c);
-}
-
-vec3 checkBoard(vec2 uv) {
-    vec2 id = floor(uv);
-    float w = fract((id.x + id.y)/2.) * 2.;
-    vec3 col = mix(primary.rgb, background.rgb, clamp(0., 1., w));
-    return col;
-}
-
-vec3 triangle(vec2 uv) {
-    uv.y /= 1.732050808; //sqrt(3.);
-    float idy = floor(uv.y);
-    float yodd = mod(idy, 2);
-    float y = mod(floor(uv.x+ yodd), 2) - fract(uv.y);
-    float idx = floor(uv.x-abs(y));
-    vec2 id = vec2(idx, idy);
-    float w = mod((id.x + id.y), 2.) / 2.;
-    vec3 col = mix(primary.rgb, background.rgb, clamp(0., 1., w));
-    return col;
-}
+const int MAX_STEPS = 8;
 
 float sdBox(vec2 p, vec2 b) {
     vec2 d = abs(p)-b;
@@ -37,11 +12,34 @@ float sdBox(vec2 p, vec2 b) {
 }
 
 half4 main(vec2 fragCoord) {
-    vec2 centerPos = vec2(100,100);
-    fragCoord -= centerPos; // Move 0,0 to center
-    float angleRad = PI * 2.0 * iTime;
-    fragCoord *= rot(angleRad); // rotate 45 degree
-    fragCoord += centerPos; // Move 0,0 to left, top
-    float d = sdBox(fragCoord - centerPos, vec2(100, 30));
-    return vec4(vec3(d),1);
+    fragCoord -= iResolution.xy / 2.0; // Move 0,0 to center
+    fragCoord /= iResolution.x; // scale to device width
+    vec3 col = vec3(0);
+    vec2 p = fragCoord * float(MAX_STEPS);
+    float step = 1.0 / float(MAX_STEPS - 1);
+    float currentPos = iTime * 2.0;
+    for (int i = 0; i < MAX_STEPS; i++) {
+        float slot = float(i) * step;
+        float midPoint = (.5 - abs(slot - .5)) * 2.0;
+        float m = 0.0;
+        if (i >= MAX_STEPS / 2) m = 1.0;
+        float relPos = mod(currentPos - slot - 1.0 - midPoint * m, 2.0);
+        float dLight = mod(relPos, 2.0 - midPoint) / 2.0;
+
+        float intensity = 1.0 - smoothstep(0.0, .7, dLight);
+        vec2 pb = p - vec2((slot - .5) * 6.0, 0);
+
+        float d = sdBox(pb, vec2(0.41, 0.1));
+        float value = 1. - smoothstep(0.0, 0.01, d);
+        col += mix(vec3(.1,.1,.1), vec3(1,.3,0), intensity) * value;
+
+        float dCircle = length(pb * vec2(.5,1));
+        float blur = mix(0.03, 0.3, intensity * intensity);
+        col += (1.0 - smoothstep(0.0, blur, dCircle)) * vec3(1,.7,.3) * 1.5; // over exposure
+
+        intensity = 1.0 - smoothstep(0.0, .35, dLight);
+        float dStar = (1.0 - abs(pb.x));
+        col += smoothstep(0.0, 4., dStar) * vec3(.8,.2,1.) * intensity;
+    }
+    return vec4(col,1);
 }

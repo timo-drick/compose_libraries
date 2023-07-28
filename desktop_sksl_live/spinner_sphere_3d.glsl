@@ -1,4 +1,4 @@
-uniform float3 iResolution;
+uniform float2 iResolution;
 uniform float density;
 uniform float iTime;
 
@@ -21,8 +21,8 @@ float smin(float a, float b, float k) {
 }
 
 float GetDist(vec3 p) {
-    p.xy *= Rot(PI*iTime*0.1);
-    p.xz *= Rot(PI*iTime*0.2);
+    p.xy *= Rot(PI*2.0*iTime);
+    p.xz *= Rot(PI*1.0*iTime);
 
     float width = .03;
     float sphere = abs(length(p)-1.)-width;
@@ -73,7 +73,7 @@ vec3 GetRayDir(vec2 uv, vec3 p, vec3 l, float z) {
 half4 main(vec2 fragCoord) {
     // Normalized pixel coordinates (from -1 to 1)
     vec2 uv = (fragCoord/iResolution.xy-.5)*2.;
-    //uv.x *= iResolution.x/iResolution.y;
+    uv.y *= iResolution.y/iResolution.x;
 
     vec3 ro = vec3(0, 3, -1)*.6;
     vec3 rd = GetRayDir(uv, ro, vec3(0,0,0), 1.);
@@ -86,29 +86,19 @@ half4 main(vec2 fragCoord) {
     float light = centerLight * smoothstep(.0, .3, d-2.);
     float s = GetDist(normalize(ro));
     light += centerLight*smoothstep(.0, .1, s);
-
     vec3 col = vec3(0);
-    float alphaMask = 0.;
-
     if(d<MAX_DIST) {
         vec3 p = ro + rd * d;
         vec3 n = GetNormal(p);
         vec3 r = reflect(rd, n);
-
         vec3 lightDir = -normalize(p);
-
         float pl = dot(n, lightDir)*.5+.5;
         float dif = .2*(dot(n, normalize(vec3(1,2,3)))*.5+.5);
         float l = max(pl, dif);
         col = vec3(l)+light;
-
-        alphaMask = 1.;
     } else {
-        col = vec3(1.);
-        alphaMask = light;
+        col = vec3(light);
     }
-
-    col = pow(col, vec3(.4545));    // gamma correction
-    //col = mix(vec3(0), col, alphaMask);
-    return half4(0,0,0, alphaMask);
+    float alpha = (col.r + col.g + col.b) / 3.0;
+    return half4(col, alpha);
 }

@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -108,7 +109,7 @@ fun main() = application {
         position = WindowPosition.Aligned(Alignment.Center),
         size = DpSize(1000.dp, 600.dp)
     )
-
+    val file = File("desktop_sksl_live/test.glsl")
 
     Window(
         title = "Compose / Skia shader demo",
@@ -124,30 +125,28 @@ fun main() = application {
                 repeatMode = RepeatMode.Restart,
             )
         )
-        EbonTheme {
-            val file = File("desktop_sksl_live/test.glsl")
+        AppTheme {
+            val effect = rememberLiveEffect(file)
             val background = MaterialTheme.colorScheme.background
             val primary = MaterialTheme.colorScheme.primary
-            val effect = rememberLiveEffect(file)
             Box(
                 modifier = Modifier.fillMaxSize()
-                    //.background(background)
+                    .background(background)
                     .skslBackground(
                         effect = effect,
                         iTime = time.value,
                         uniforms = { builder ->
                             builder.uniformColor("background", background)
                             builder.uniformColor("primary", primary)
-                            builder.uniform("iDensity", 1f)
                         }
                     )
                 //.skslLiveBackground(file)
             ) {
-                val spinnerEffect = rememberLiveEffect(File("desktop_sksl_live/arrow.glsl"))
+                /*val spinnerEffect = rememberLiveEffect(File("desktop_sksl_live/arrow.glsl"))
                 Box(
                     modifier = Modifier.align(Alignment.Center).fillMaxSize().skslBackground(spinnerEffect)
                 )
-
+                */
             }
         }
     }

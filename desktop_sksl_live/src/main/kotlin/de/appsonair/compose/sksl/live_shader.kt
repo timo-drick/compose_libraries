@@ -37,7 +37,6 @@ fun rememberLiveEffect(file: File): RuntimeEffect {
     return runtimeEffect
 }
 
-
 fun Modifier.skslBackground(
     effect: RuntimeEffect,
     iTime: Float = 1f,
@@ -46,7 +45,7 @@ fun Modifier.skslBackground(
     val density = LocalDensity.current
     this.drawWithCache {
         val builder = RuntimeShaderBuilder(effect)
-        builder.uniform("iResolution", size.width, size.height, 1f)
+        builder.uniform("iResolution", size.width, size.height)
         builder.uniform("iDensity", density.density)
         builder.uniform("iTime", iTime)
         uniforms(builder)
