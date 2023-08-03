@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import de.drick.common.log
 import javax.microedition.khronos.egl.EGL10
 import javax.microedition.khronos.egl.EGLConfig
@@ -106,7 +107,6 @@ class GLRenderer(onErrorFallback: () -> Unit, glBlock: GLDsl.() -> Unit) {
 data class EGLSurfaceInfo(val egl: EGL10, val renderContext: EGLContext, val display: EGLDisplay, val config: EGLConfig)
 
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ComposeGl(
     modifier: Modifier = Modifier,
@@ -117,36 +117,17 @@ fun ComposeGl(
         null
     }
 
-    val lifeCycleState = LocalLifecycleOwner.current.lifecycle
-
     val k1 = remember(key1) {
         view?.requestRender()
         null
     }
-
-    DisposableEffect(lifeCycleState) {
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_RESUME -> {
-                    view?.onResume()
-                    renderer.onResume()
-                }
-                Lifecycle.Event.ON_PAUSE -> {
-                    view?.onPause()
-                    renderer.onPause()
-                }
-                else -> {
-                }
-            }
-        }
-        lifeCycleState.addObserver(observer)
-
-        onDispose {
-            log("View Disposed ${view.hashCode()}")
-            renderer.requestGlRender = {}
-            lifeCycleState.removeObserver(observer)
+    LifecycleResumeEffect(Unit) {
+        view?.onResume()
+        renderer.onResume()
+        onPauseOrDispose {
             view?.onPause()
-            view = null
+            renderer.onPause()
+            renderer.requestGlRender = {}
         }
     }
     Box(modifier) {

@@ -51,6 +51,7 @@ dependencies {
     implementation(project(":common"))
 
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:${Versions.lifecycle}")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:${Versions.lifecycle}")
 
     // Compose
     val composeBom = platform("androidx.compose:compose-bom:${Versions.composeBom}")
