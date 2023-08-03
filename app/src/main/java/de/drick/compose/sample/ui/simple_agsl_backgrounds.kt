@@ -104,7 +104,7 @@ fun CompatShader(modifier: Modifier = Modifier, shaderSrc: String) {
     val dpPixel = with(LocalDensity.current) { dpWidth.toPx() }
     val x = 10f / dpPixel
     val y = x
-    if (Build.VERSION.SDK_INT >= 33 && false) {
+    if (Build.VERSION.SDK_INT >= 33) {
         Spacer(
             modifier = modifier.drawWithCache {
                 val shader = RuntimeShader(shaderSrc)

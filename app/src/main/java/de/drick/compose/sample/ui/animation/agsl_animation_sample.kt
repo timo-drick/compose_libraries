@@ -48,6 +48,7 @@ fun ShaderAnimation(
             PixelShader(shaderSrc)
         }
         pixelShader.setFloatUniform("iTime", animation.value)
+        // iResoluition uniform is provided by the ComposeGl component
         ComposeGl(
             modifier = modifier,
             renderer = pixelShader.renderer

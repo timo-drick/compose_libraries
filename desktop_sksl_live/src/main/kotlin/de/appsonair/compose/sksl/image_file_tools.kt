@@ -14,11 +14,14 @@ import org.jetbrains.skia.Image
 import org.jetbrains.skia.RuntimeEffect
 import org.jetbrains.skia.RuntimeShaderBuilder
 import java.io.File
+import kotlin.math.roundToInt
 
 fun main() {
+    val time = 1400f
+    val steps = (time / 30f).roundToInt()
     sampleCreateSKSLImageSequence(
-        shaderFile = File("desktop_sksl_live/spinner.glsl"),
-        steps = 80,
+        shaderFile = File("desktop_sksl_live/test.glsl"),
+        steps = steps,
         outputFolder = File("anim")
     )
 }
@@ -28,15 +31,29 @@ fun sampleCreateSKSLImageSequence(
     steps: Int,
     outputFolder: File
 ) {
+    val size = Size(512f, 512f)
     val shader = RuntimeEffect.makeForShader(shaderFile.readText())
-    for (i in 0 until steps) {
+    val sampleImage = drawToImage(shader, 10.toFloat() / steps.toFloat(), size)
+
+    createGifAnimation(
+        file = File(outputFolder, "anim.gif"),
+        sampleImage = sampleImage,
+        delayTicks = 3, // in my tests it looks like this value must be at least 3 otherwise the browser will play it back very slow
+        loop = true
+    ) {
+        for (i in 0 until steps) {
+            val image = drawToImage(shader, i.toFloat() / steps.toFloat(), size)
+            add(image)
+        }
+    }
+    /*for (i in 0 until steps) {
         val image = drawToImage(shader, i.toFloat() / steps.toFloat(), Size(400f, 400f))
         val skiaBitmap = Image.makeFromBitmap(image.asSkiaBitmap())
         val data =
             skiaBitmap.encodeToData(EncodedImageFormat.WEBP) ?: error("Unable to create webp image")
         println("write frame: $i")
         File(outputFolder, "sequence_$i.webp").writeBytes(data.bytes)
-    }
+    }*/
 }
 
 fun drawToImage(
