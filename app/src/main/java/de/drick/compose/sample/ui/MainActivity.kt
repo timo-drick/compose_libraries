@@ -48,7 +48,7 @@ enum class Screens {
     ChartShader,
     AnimationShader,
     FlameShader,
-    //AttitudeSample
+    CurtainTransitionSample
 }
 
 enum class LoadingShader(val src: String, val loopDuration: Int = 2000) {
@@ -113,13 +113,20 @@ fun MainScreen() {
     ) { padding ->
         when (currentScreen) {
             Screens.SimpleShader -> PixelShaderSamples()
-            Screens.ChartShader -> PieChart(modifier = Modifier.fillMaxSize())
+            Screens.ChartShader -> PieChart(modifier = Modifier
+                .padding(padding)
+                .fillMaxSize())
             Screens.AnimationShader -> ShaderAnimation(
                 modifier = Modifier
                     .padding(padding)
                     .fillMaxSize()
             )
             Screens.FlameShader -> FlameScreen()
+            Screens.CurtainTransitionSample -> TransitionScreen(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+            )
             //Screens.AttitudeSample -> AttitudeArrow(modifier = Modifier.fillMaxSize())
             null -> {
                 LazyColumn(
