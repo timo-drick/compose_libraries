@@ -83,25 +83,6 @@ val appsOnAirBackground = """
     }
 """.trimIndent()
 
-fun Modifier.aoaBackground(): Modifier = composed {
-    val background = MaterialTheme.colorScheme.background
-    val primary = MaterialTheme.colorScheme.primary
-    val file = File("/home/timo/projects/compose/github/rewe_ebon_analyzer/test.glsl")
-    val runtimeEffect = rememberLiveEffect(file)
-    this.drawWithCache {
-        //val runtimeEffect = RuntimeEffect.makeForShader(appsOnAirBackground)
-
-        val builder = RuntimeShaderBuilder(runtimeEffect)
-        builder.uniformColor("background", background)
-        builder.uniformColor("primary", primary)
-        val shader = builder.makeShader()
-        val brush = ShaderBrush(shader)
-        onDrawBehind {
-            drawRect(brush = brush, topLeft = Offset.Zero, size = size)
-        }
-    }
-}
-
 
 fun main() = application {
     val state = rememberWindowState(
