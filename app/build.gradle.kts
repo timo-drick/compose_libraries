@@ -12,7 +12,7 @@ android {
     defaultConfig {
         applicationId = "de.drick.compose.sample.SampleApp"
         minSdk = 21
-        targetSdk = 33
+        targetSdk = Versions.compileSdk
         versionCode = 1
         versionName = "0.1"
 
@@ -26,11 +26,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
@@ -59,6 +59,7 @@ dependencies {
 
     // Compose
     implementation("androidx.activity:activity-compose:${Versions.activityCompose}")
+    implementation("androidx.compose.foundation:foundation:1.6.0-alpha01")
     val composeBom = platform("androidx.compose:compose-bom:${Versions.composeBom}")
     implementation(composeBom)
     androidTestImplementation(composeBom)

@@ -1,17 +1,8 @@
-package de.drick.compose.sample.ui
+package de.appsonair.compose.sksl
 
-import android.graphics.RenderEffect
-import android.graphics.RuntimeShader
-import android.os.Build
-import androidx.annotation.RequiresApi
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.AnchoredDraggableState
-import androidx.compose.foundation.gestures.DraggableAnchors
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.anchoredDraggable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -32,151 +24,75 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.movableContentOf
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import de.drick.compose.sample.theme.Pink80
-import de.drick.compose.sample.theme.Purple80
-import de.drick.compose.sample.theme.PurpleGrey80
+import androidx.compose.ui.window.singleWindowApplication
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import org.intellij.lang.annotations.Language
+import org.jetbrains.skia.ImageFilter
+import org.jetbrains.skia.RuntimeShaderBuilder
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@Composable
-fun TransitionScreen(modifier: Modifier) {
-    if (Build.VERSION.SDK_INT > 32) {
-        CurtainTransition(
-            modifier = modifier.fillMaxSize(),
-            content = { TransitionMainScreen() },
-            overlay = { TransitionOverlayScreen() }
-        )
-
-    } else {
-        Column(
-            modifier = modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("Unsupported device.", style = MaterialTheme.typography.titleLarge)
-            Text(
-                text = "Device api level (${Build.VERSION.SDK_INT}) to low. API 33 or above required.",
-                style = MaterialTheme.typography.bodyMedium
+fun main() = singleWindowApplication {
+    MaterialTheme(colorScheme = DarkColorScheme) {
+        Scaffold { padding ->
+            CurtainTransition(
+                modifier = Modifier.padding(padding).fillMaxSize(),
+                content = { TransitionMainScreen() },
+                overlay = { TransitionOverlayScreen() }
             )
         }
     }
 }
 
-@Language("AGSL")
-val SHADER_SRC = """
-uniform float2 iResolution;
-uniform float2 iOffset;
-uniform shader background;
-const float PI = 3.14159265359;
-const float X_SHIFT_START = 0.2;
+val file = File("desktop_sksl_live/curtain_shader.glsl")
 
-vec4 main(vec2 fragCoord)
-{
-    vec2 uv = fragCoord / iResolution.x; // change coordinate system 0..1
-    vec2 offset = iOffset / iResolution.x;
-    float xShift = max(0, X_SHIFT_START - offset.x);
-    uv.x += xShift * .5;
-    vec2 a = abs(uv - offset);
-    a = a * a * .2;
-    float dist = offset.x + (a.y * (1. - uv.x) * (1.0 - offset.x));
-    float distI = 1.0 - dist;
-    float freq = 5.0;
-    float intensity = distI * .5;
-    float angle = (uv.x / dist) * 2.0 * PI * freq;
-    float light = sin(angle) * intensity + 1.0;
-    float fold = -cos(angle) * intensity;
-    
-    vec2 pos = vec2(uv.x / dist, uv.y + fold * .03);
-    pos *= iResolution.x;
-    vec3 col = background.eval(pos).rgb * light;
-    col = mix(col, vec3(0.1), smoothstep(dist, dist + .005, uv.x));
-    float shadow = 0.02;
-    float alpha = 1.0 - smoothstep(dist, dist + shadow, uv.x);
-    return vec4(col * alpha, alpha);
-}
-""".trimIndent()
-
-enum class DragAnchors { Start, End }
-
-@OptIn(ExperimentalFoundationApi::class)
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun CurtainTransition(
     modifier: Modifier,
     content: @Composable () -> Unit,
     overlay: @Composable () -> Unit
 ) {
-    val foreground = remember { movableContentOf(overlay) }
-    val density = LocalDensity.current
-    val shader = remember { RuntimeShader(SHADER_SRC) }
-    var yPosition by remember { mutableFloatStateOf(0f) }
-    val state = remember {
-        AnchoredDraggableState(
-            initialValue = DragAnchors.Start,
-            positionalThreshold = { distance: Float -> distance * 0.5f },
-            velocityThreshold = { with(density) { 100.dp.toPx()} },
-            animationSpec = tween(500),
-            anchors = DraggableAnchors {
-                DragAnchors.Start at 0f
-                DragAnchors.End at 0f
-            }
-        )
-    }
+    var offset: Offset? by remember { mutableStateOf(null) }
+    val effect = rememberLiveEffect(file)
+    val shaderBuilder = remember(effect) { RuntimeShaderBuilder(effect) }
     Box(
         modifier = modifier
-            .anchoredDraggable(state, Orientation.Horizontal)
             .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) { // just to be able to get y position of pointer
-                        yPosition = awaitPointerEvent().changes.last().position.y
-                    }
+                detectHorizontalDragGestures { change, _ ->
+                    val pos = change.position
+                    change.consume()
+                    offset = pos
                 }
             }
-            .onSizeChanged { size ->
-                state.updateAnchors(
-                    newAnchors = DraggableAnchors {
-                        DragAnchors.Start at size.width.toFloat()
-                        DragAnchors.End at 0f
-                    }
-                )
-            }
     ) {
-        if (state.isAnimationRunning || state.progress < 1.0 || state.currentValue == DragAnchors.End) {
-            content()
-        }
-        if (state.isAnimationRunning || state.progress < 1.0) {
-            Box(
-                modifier = Modifier
-                    .graphicsLayer {
-                        shader.setFloatUniform("iResolution", size.width, size.height)
-                        shader.setFloatUniform("iOffset", state.requireOffset(), yPosition)
-                        renderEffect = RenderEffect.createRuntimeShaderEffect(shader, "background")
-                            .asComposeRenderEffect()
-                    },
-                content = { foreground() }
-            )
-        } else {
-            if (state.currentValue == DragAnchors.Start) {
-                foreground()
-            }
+        content()
+        Box(
+            modifier = Modifier
+                .graphicsLayer {
+                    shaderBuilder.uniform("iResolution", size.width, size.height)
+                    val iOffset = offset ?: Offset(size.width, 0f)
+                    shaderBuilder.uniform("iOffset", iOffset.x, iOffset.y)
+                    renderEffect = ImageFilter.makeRuntimeShader(
+                        runtimeShaderBuilder = shaderBuilder,
+                        shaderName = "background",
+                        input = null
+                    ).asComposeRenderEffect()
+                }
+        ) {
+            overlay()
         }
     }
 }
@@ -296,6 +212,20 @@ fun TransitionOverlayScreen() {
         }
     }
 }
+
+val Purple80 = Color(0xFFD0BCFF)
+val PurpleGrey80 = Color(0xFFCCC2DC)
+val Pink80 = Color(0xFFEFB8C8)
+
+val Purple40 = Color(0xFF6650a4)
+val PurpleGrey40 = Color(0xFF625b71)
+val Pink40 = Color(0xFF7D5260)
+
+private val DarkColorScheme = darkColorScheme(
+    primary = Purple80,
+    secondary = PurpleGrey80,
+    tertiary = Pink80
+)
 
 private val DarkBlueColorScheme = darkColorScheme(
     primary = Purple80,

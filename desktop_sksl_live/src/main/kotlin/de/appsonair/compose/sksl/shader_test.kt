@@ -13,9 +13,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.unit.DpSize
@@ -102,7 +99,7 @@ fun main() = application {
             initialValue = 0f,
             targetValue = 1f,
             animationSpec = infiniteRepeatable(
-                animation = tween(10000, easing = LinearEasing),
+                animation = tween(1400, easing = LinearEasing),
                 repeatMode = RepeatMode.Restart,
             )
         )
@@ -121,14 +118,7 @@ fun main() = application {
                             builder.uniformColor("primary", primary)
                         }
                     )
-                //.skslLiveBackground(file)
-            ) {
-                /*val spinnerEffect = rememberLiveEffect(File("desktop_sksl_live/arrow.glsl"))
-                Box(
-                    modifier = Modifier.align(Alignment.Center).fillMaxSize().skslBackground(spinnerEffect)
-                )
-                */
-            }
+            )
         }
     }
 }

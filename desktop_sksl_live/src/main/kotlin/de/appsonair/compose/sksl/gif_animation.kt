@@ -25,6 +25,9 @@ fun createGifAnimation(
     loop: Boolean = true,
     block: GifAnimationDsl.() -> Unit
 ) {
+    if (file.exists()) {
+        file.delete()
+    }
     FileImageOutputStream(file).use { output ->
         val img = sampleImage.toAwtImage()
         val writer = GifSequenceWriter(output, img.type, delayTicks, loop)
