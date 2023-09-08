@@ -58,7 +58,7 @@ enum class LoadingShader(val src: String, val loopDuration: Int = 2000) {
 }
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 fun MainScreen() {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -66,7 +66,7 @@ fun MainScreen() {
     var loadingShader: LoadingShader? by remember { mutableStateOf(null) }
     val isLoading by remember { derivedStateOf { loadingShader != null }}
 
-    var currentScreen: Screens? by remember { mutableStateOf(null) }
+    var currentScreen: Screens? by remember { mutableStateOf(Screens.CurtainTransitionSample) }
 
     val backNavigationEnabled by remember {
         derivedStateOf { currentScreen != null }

@@ -7,7 +7,7 @@ plugins {
 android {
     namespace = "de.drick.compose.progress_indication"
     compileSdk = Versions.compileSdk
-    buildToolsVersion = Versions.buildToolsVersion
+    buildToolsVersion = Versions.buildTools
 
     defaultConfig {
         minSdk = 21

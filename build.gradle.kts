@@ -7,10 +7,6 @@ plugins {
     id("com.github.ben-manes.versions") version Versions.benManesPlugin
 }
 
-tasks.register("clean", Delete::class) {
-    delete(rootProject.buildDir)
-}
-
 fun isNonStable(version: String): Boolean {
     val unStableKeyword = listOf("alpha", "beta", "rc", "cr", "m", "preview").any { version.contains(it, ignoreCase = true) }
     val regex = "^[0-9,.v-]+(-r)?$".toRegex()

@@ -2,7 +2,7 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
     kotlin("jvm")
-    id("org.jetbrains.compose") version "1.5.0-dev1136"
+    id("org.jetbrains.compose") version Versions.composeDesktop
 }
 
 group = "de.appsonair.compose.sksl"

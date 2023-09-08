@@ -7,7 +7,7 @@ plugins {
 android {
     namespace = "de.drick.compose.sample"
     compileSdk = Versions.compileSdk
-    buildToolsVersion = Versions.buildToolsVersion
+    buildToolsVersion = Versions.buildTools
 
     defaultConfig {
         applicationId = "de.drick.compose.sample.SampleApp"
@@ -59,7 +59,7 @@ dependencies {
 
     // Compose
     implementation("androidx.activity:activity-compose:${Versions.activityCompose}")
-    implementation("androidx.compose.foundation:foundation:1.6.0-alpha01")
+    implementation("androidx.compose.foundation:foundation:1.6.0-alpha04")
     val composeBom = platform("androidx.compose:compose-bom:${Versions.composeBom}")
     implementation(composeBom)
     androidTestImplementation(composeBom)
