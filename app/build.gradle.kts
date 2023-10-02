@@ -58,14 +58,16 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:${Versions.lifecycle}")
 
     // Compose
+    implementation("com.google.accompanist:accompanist-adaptive:${Versions.accompanist}")
     implementation("androidx.activity:activity-compose:${Versions.activityCompose}")
-    implementation("androidx.compose.foundation:foundation:1.6.0-alpha04")
+    implementation("androidx.compose.foundation:foundation:1.6.0-alpha06")
     val composeBom = platform("androidx.compose:compose-bom:${Versions.composeBom}")
     implementation(composeBom)
     androidTestImplementation(composeBom)
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material3:material3-window-size-class")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
