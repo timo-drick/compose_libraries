@@ -135,7 +135,7 @@ fun CurtainTransition(
             velocityThreshold = { with(density) { 100.dp.toPx()} },
             animationSpec = tween(500),
             anchors = DraggableAnchors {
-                DragAnchors.Start at 0f
+                DragAnchors.Start at Float.MAX_VALUE
                 DragAnchors.End at 0f
             }
         )
