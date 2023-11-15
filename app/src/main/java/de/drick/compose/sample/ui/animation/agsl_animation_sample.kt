@@ -36,7 +36,7 @@ fun ShaderAnimation(
         )
     )
     if (Build.VERSION.SDK_INT > 32) {
-        val shader = remember { RuntimeShader(shaderSrc) }
+        val shader = remember(shaderSrc) { RuntimeShader(shaderSrc) }
         val brush = remember(shader) { ShaderBrush(shader) }
         Canvas(modifier = modifier) {
             shader.setFloatUniform("iTime", animation.value)
@@ -44,7 +44,7 @@ fun ShaderAnimation(
             drawRect(brush)
         }
     } else {
-        val pixelShader = remember {
+        val pixelShader = remember(shaderSrc) {
             PixelShader(shaderSrc)
         }
         pixelShader.setFloatUniform("iTime", animation.value)
@@ -58,7 +58,7 @@ fun ShaderAnimation(
 
 @RequiresApi(33)
 @Composable
-fun Modifier.loadingModifier(src: String = SHADER_SPINNER_SPHERE_3D) = composed {
+fun Modifier.loadingModifier(shaderSrc: String = SHADER_SPINNER_SPHERE_3D) = composed {
     val infiniteTransition = rememberInfiniteTransition("loop")
     val animation = infiniteTransition.animateFloat(
         label = "progress",
@@ -68,7 +68,7 @@ fun Modifier.loadingModifier(src: String = SHADER_SPINNER_SPHERE_3D) = composed 
             tween(2000, easing = LinearEasing),
         )
     )
-    val shader = remember { RuntimeShader(src) }
+    val shader = remember(shaderSrc) { RuntimeShader(shaderSrc) }
     val brush = remember(shader) { ShaderBrush(shader) }
     this.drawWithCache {
         shader.setFloatUniform("iTime", animation.value)
