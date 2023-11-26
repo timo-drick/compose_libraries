@@ -45,14 +45,12 @@ fun ProgressOverlay(
                 .zIndex(100f)
                 .alpha(alpha)
                 .background(Color.Black.copy(alpha = alpha * 0.7f))
-                .then( // catches all pointer events to prevent clicking
-                    Modifier.pointerInput(true) {
-                        awaitPointerEventScope {
-                            val event = awaitPointerEvent() //Captcher any event
-                            //Do nothing
-                        }
+                .pointerInput(true) {  // catches all pointer events to prevent clicking
+                    awaitPointerEventScope {
+                        val event = awaitPointerEvent() //catch any event
+                        //Do nothing
                     }
-                ),
+                },
             contentAlignment = Alignment.Center
         ) {
             if (loadingOverlay) {

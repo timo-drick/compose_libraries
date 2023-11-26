@@ -6,6 +6,7 @@ import android.os.Process
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -22,8 +23,6 @@ import javax.microedition.khronos.egl.EGLDisplay
 import javax.microedition.khronos.opengles.GL10
 
 interface GLDsl {
-    val config: EGLConfig
-
     fun onSurfaceChanged(block: (width: Int, height: Int) -> Unit)
     fun onDrawFrame(block: () -> Unit)
     fun onDestroy(block: () -> Unit)
@@ -43,6 +42,12 @@ val simpleOpenGlRenderer = GLRenderer({}) {
     }
 }
 
+interface SurfaceRenderer {
+    fun onSurfaceCreated()
+    fun onSurfaceChanged(width: Int, height: Int)
+    fun onDrawFrame()
+}
+
 class GLRenderer(onErrorFallback: () -> Unit, glBlock: GLDsl.() -> Unit) {
 
     internal var requestGlRender: () -> Unit = {}
@@ -56,7 +61,7 @@ class GLRenderer(onErrorFallback: () -> Unit, glBlock: GLDsl.() -> Unit) {
 
     }
 
-    class DslImpl(override val config: EGLConfig): GLDsl {
+    class DslImpl: GLDsl {
         var onSurfaceChangedBlock: ((width: Int, height: Int) -> Unit)? = null
         var onDrawFrameBlock: (() -> Unit)? = null
         var onDestroyBlock: (() -> Unit)? = null
@@ -75,14 +80,14 @@ class GLRenderer(onErrorFallback: () -> Unit, glBlock: GLDsl.() -> Unit) {
         }
     }
 
-    val renderer = object : GLSurfaceView.Renderer {
+    val renderer = object : SurfaceRenderer {
         private var dsl: DslImpl? = null
-        override fun onSurfaceCreated(gl: GL10, config: EGLConfig) {
+        override fun onSurfaceCreated() {
             log("onSurfaceCreated")
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND)
             val egl = EGLContext.getEGL() as EGL10
             //val eglSurfaceInfo = EGLSurfaceInfo(egl, egl.eglGetCurrentContext(), egl.eglGetCurrentDisplay(), config)
-            dsl = DslImpl(config).also { dsl ->
+            dsl = DslImpl().also { dsl ->
                 try {
                     glBlock(dsl)
                 } catch (err: Throwable) {
@@ -92,13 +97,13 @@ class GLRenderer(onErrorFallback: () -> Unit, glBlock: GLDsl.() -> Unit) {
             }
         }
 
-        override fun onSurfaceChanged(gl: GL10, width: Int, height: Int) {
+        override fun onSurfaceChanged(width: Int, height: Int) {
             log("onSurfaceChanged")
             dsl?.onSurfaceChangedBlock?.invoke(width, height)
 
         }
 
-        override fun onDrawFrame(gl: GL10) {
+        override fun onDrawFrame() {
             dsl?.onDrawFrameBlock?.invoke()
         }
     }
@@ -108,23 +113,31 @@ data class EGLSurfaceInfo(val egl: EGL10, val renderContext: EGLContext, val dis
 
 
 @Composable
-fun ComposeGl(
+fun ComposeGlSurfaceView(
     modifier: Modifier = Modifier,
     renderer: GLRenderer,
+    zOrderOnTop: Boolean = true,
     key1: Any? = null
 ) {
     var view: RenderSurfaceView? = remember {
         null
     }
 
-    val k1 = remember(key1) {
+    /*val k1 = remember(key1) {
         view?.requestRender()
         null
-    }
+    }*/
     LifecycleResumeEffect(Unit) {
-        view?.onResume()
-        renderer.onResume()
+        log("resume")
+        view?.let {
+            renderer.requestGlRender = {
+                it.requestRender()
+            }
+            it.onResume()
+            renderer.onResume()
+        }
         onPauseOrDispose {
+            log("pause")
             view?.onPause()
             renderer.onPause()
             renderer.requestGlRender = {}
@@ -135,7 +148,7 @@ fun ComposeGl(
             factory = {
                 log("factory")
                 val glSurfaceView = RenderSurfaceView(it, null, renderer.renderer)
-                glSurfaceView.setZOrderOnTop(true)
+                glSurfaceView.setZOrderOnTop(zOrderOnTop)
                 //glSurfaceView.setZOrderMediaOverlay(true)
                 glSurfaceView.debugFlags =
                     GLSurfaceView.DEBUG_CHECK_GL_ERROR or GLSurfaceView.DEBUG_LOG_GL_CALLS
@@ -146,7 +159,72 @@ fun ComposeGl(
                 glSurfaceView
             },
             update = { _ ->
+            },
+            onReset = {
+                log("reset")
+            }
+            ,
+            onRelease = {
+                log("release")
             }
         )
+    }
+}
+
+@Composable
+fun ComposeGl(
+    modifier: Modifier = Modifier,
+    renderer: GLRenderer,
+    key1: Any? = null
+) {
+    var view: GLTextureView? = remember {
+        null
+    }
+
+    /*val k1 = remember(key1) {
+        log("request render")
+        view?.requestRender()
+        null
+    }*/
+
+    LifecycleResumeEffect {
+        log("resume")
+        view?.let {
+            it.onResume()
+            renderer.onResume()
+        }
+
+        onPauseOrDispose {
+            log("pause")
+            view?.onPause()
+            renderer.onPause()
+            //renderer.requestGlRender = {}
+        }
+    }
+    var surfaceView: GLTextureView? = null
+    Box(modifier) {
+        key(renderer) {
+            AndroidView(
+                factory = {
+                    log("factory")
+                    val glSurfaceView = GLTextureView(it, null, renderer.renderer)
+                    glSurfaceView.isOpaque = false
+                    view = glSurfaceView
+                    /*renderer.requestGlRender = {
+                    glSurfaceView.requestRender()
+                }*/
+                    glSurfaceView
+                },
+                update = { _ ->
+                    log("update")
+                },
+                onReset = {
+                    log("reset")
+                },
+                onRelease = {
+                    log("release")
+                }
+            )
+        }
     }
 }
