@@ -1,14 +1,17 @@
-package de.appsonair.compose.live_code_plugin
+package de.appsonair.compose.sksl
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.singleWindowApplication
 import io.ktor.util.pipeline.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -30,8 +33,7 @@ import java.net.SocketException
 import java.nio.file.FileSystems
 import java.nio.file.StandardWatchEventKinds
 
-@Composable
-fun MainScreen() {
+fun main() = singleWindowApplication {
     val connectionList = remember { mutableStateListOf<String>() }
 
     MaterialTheme {

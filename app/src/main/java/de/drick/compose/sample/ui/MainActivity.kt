@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,17 +20,43 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import de.drick.common.LogConfig
+import de.drick.common.log
 import de.drick.compose.opengl.PixelShaderSamples
 import de.drick.compose.progress_indication.ProgressOverlay
 import de.drick.compose.sample.theme.SampleTheme
+import de.drick.compose.sample.theme.shaderBackground
+import de.drick.compose.sample.theme.shaderPrimary
 import de.drick.compose.sample.ui.animation.SHADER_KITT
 import de.drick.compose.sample.ui.animation.SHADER_SPINNER_SPHERE_3D
 import de.drick.compose.sample.ui.animation.SHADER_WHEEL
 import de.drick.compose.sample.ui.animation.ShaderAnimation
+import de.drick.compose.sample.ui.animation.ShinyButton
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.io.PrintWriter
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.InetAddress
+import java.net.MulticastSocket
+import java.net.Socket
+
+@RequiresApi(33)
+@Composable
+fun ShaderScreen() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .backgroundShader(shaderCode)
+    )
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,12 +88,14 @@ enum class LoadingShader(val src: String, val loopDuration: Int = 2000) {
 @OptIn(ExperimentalMaterial3Api::class)
 fun MainScreen() {
     val scope = rememberCoroutineScope()
+
+    val shaderSrc = remoteFileAsState("app/src/main/assets/live.agsl")
     val snackbarHostState = remember { SnackbarHostState() }
 
     var loadingShader: LoadingShader? by remember { mutableStateOf(null) }
     val isLoading by remember { derivedStateOf { loadingShader != null }}
 
-    var currentScreen: Screens? by remember { mutableStateOf(Screens.CurtainTransitionSample) }
+    var currentScreen: Screens? by remember { mutableStateOf(Screens.AnimationShader) }
 
     val backNavigationEnabled by remember {
         derivedStateOf { currentScreen != null }
@@ -89,15 +118,26 @@ fun MainScreen() {
             )
         }
     }
+    Box(
+        Modifier
+            .fillMaxSize()
+            .backgroundShader(
+                shaderSrc = shaderAOABackground,
+                background = shaderBackground,
+                primary = shaderPrimary
+            )
+    )
     // A surface container using the 'background' color from the theme
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        containerColor = Color.Transparent,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
                     Text(topBarName)
                 },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                 navigationIcon = {
                     if (backNavigationEnabled) {
                         IconButton(onClick = { currentScreen = null }) {
@@ -119,7 +159,8 @@ fun MainScreen() {
             Screens.AnimationShader -> ShaderAnimation(
                 modifier = Modifier
                     .padding(padding)
-                    .fillMaxSize()
+                    .fillMaxSize(),
+                shaderSrc = if (shaderSrc.isNotEmpty()) shaderSrc else SHADER_SPINNER_SPHERE_3D
             )
             Screens.FlameShader -> FlameScreen()
             Screens.CurtainTransitionSample -> TransitionScreen(
@@ -135,8 +176,14 @@ fun MainScreen() {
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(Screens.values()) { screen ->
-                        Button(onClick = { currentScreen = screen }) {
-                            Text(text = screen.name)
+                        if (screen == Screens.CurtainTransitionSample) {
+                            ShinyButton(onClick = { currentScreen = screen }) {
+                                Text(text = screen.name)
+                            }
+                        } else {
+                            Button(onClick = { currentScreen = screen }) {
+                                Text(text = screen.name)
+                            }
                         }
                     }
                     items(LoadingShader.values()) { shader ->
