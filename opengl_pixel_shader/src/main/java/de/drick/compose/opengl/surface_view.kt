@@ -10,12 +10,13 @@ import javax.microedition.khronos.egl.EGL10
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.egl.EGLContext
 import javax.microedition.khronos.egl.EGLDisplay
+import javax.microedition.khronos.opengles.GL10
 
 @SuppressLint("ViewConstructor")
 class RenderSurfaceView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    renderer: Renderer,
+    renderer: SurfaceRenderer,
 ) : GLSurfaceView(context, attrs) {
 
     init {
@@ -26,8 +27,18 @@ class RenderSurfaceView @JvmOverloads constructor(
         holder.setFormat(PixelFormat.RGBA_8888)
 
         setEGLContextFactory(ContextFactory())
-
-        setRenderer(renderer)
+        val surfaceViewRenderer = object : Renderer {
+            override fun onSurfaceCreated(gl: GL10, config: EGLConfig) {
+                renderer.onSurfaceCreated()
+            }
+            override fun onSurfaceChanged(gl: GL10, width: Int, height: Int) {
+                renderer.onSurfaceChanged(width, height)
+            }
+            override fun onDrawFrame(gl: GL10) {
+                renderer.onDrawFrame()
+            }
+        }
+        setRenderer(surfaceViewRenderer)
 
         renderMode = RENDERMODE_WHEN_DIRTY
         preserveEGLContextOnPause = true
