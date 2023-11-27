@@ -13,6 +13,9 @@ dependencies {
     implementation(compose.desktop.common)
     implementation(compose.material3)
     implementation(compose.materialIconsExtended)
+
+    val ktorVersion = "2.3.4"
+    implementation("io.ktor:ktor-network:$ktorVersion")
 }
 
 kotlin {
