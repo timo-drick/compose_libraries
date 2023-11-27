@@ -7,25 +7,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.project.Project
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import java.io.BufferedReader
 import java.io.File
-import java.io.InputStreamReader
-import java.io.PrintWriter
 import java.net.*
-import java.net.Socket
 import java.nio.file.FileSystems
 import java.nio.file.StandardWatchEventKinds
-import kotlin.coroutines.EmptyCoroutineContext
 
-data class RemoteLiveServiceState(
-    val isRunning: Boolean = false
-)
 
 data class ConnectedDevice(
     val name: String,
@@ -162,7 +153,7 @@ class RemoteLiveService : Disposable {
             established(firstLine)
             //load code
             log("Send file content")
-            //sendFile(outStream, firstLine, file.readText())
+            sendFile(outStream, firstLine, file.readText())
             val flow = folderMap.getOrPut(firstLine) {
                 textFileAsFlow(file).stateIn(scope)
             }

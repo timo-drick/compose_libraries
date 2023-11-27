@@ -147,7 +147,7 @@ class RemoteLiveService(
             established(firstLine)
             //load code
             log("Send file content")
-            //sendFile(outStream, firstLine, file.readText())
+            sendFile(outStream, firstLine, file.readText())
             val flow = folderMap.getOrPut(firstLine) {
                 textFileAsFlow(file).stateIn(scope)
             }
