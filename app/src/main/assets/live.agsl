@@ -22,8 +22,8 @@ vec4 main(vec2 fragCoord) {
     } else {
         fragCoord.x /= aspect;
     }
-    float angle = -PI * 2.0 * iTime; // - to rotate clock wise
+    float angle = -PI * .5 * iTime; // - to rotate clock wise
     fragCoord *= rot(angle); // rotate coordinate system
-    float d = sdBox(fragCoord, vec2(.7, .7));
-    return vec4(fragCoord.x, fragCoord.y,0,1);
+    float d = sdBox(fragCoord, vec2(.2, .2));
+    return vec4(d, 0., .0, 1);
 }

@@ -10,10 +10,35 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.ViewCompat
+
+private val lightPrimaryColor = Color(0xFFFAB24A)
+private val darkPrimaryColor = Color(0xFF7D4433)
+private val textColorOnLight = Color.Black
+private val textColorOnDark = Color.White
+
+private val primary = Color(0xFFF49F0D)
+private val primaryVariant = Color(0xFFFABE5D)
+private val activeInverted = Color.White
+
+private val secondary = Color(0xFF894E34)
+private val secondaryVariant = Color(0xFF915E36)
+
+private val foreground = Color(0xFF894E34)
+
+private val background = Color(0xFFFEEED2)
+private val backgroundVariant = Color(0xFFFAC367)
+
+
+val logoColorLight = Color(0xFFFF9E00)
+val logoColorDark = secondary
+
+val shaderBackground = backgroundVariant
+val shaderPrimary = primary
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -22,9 +47,9 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = darkPrimaryColor,
+    secondary = secondary,
+    tertiary = darkPrimaryColor,
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
@@ -61,7 +86,7 @@ fun SampleTheme(
     }
 
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = LightColorScheme,
         typography = Typography,
         content = content
     )

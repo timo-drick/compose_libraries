@@ -15,10 +15,10 @@ vec4 render(vec2 fragCoord) {
     a = a * a * .2;
     float dist = offset.x + (a.y * (2.-uv.x) * (1.0 - offset.x));
     float distI = 1.0 - dist;
-    float freq = 5.0;
+    float freq = 8.0;
     float intensity = distI * .5;
     float angle = (uv.x / dist) * 2.0 * PI * freq;
-    float light = sin(angle) * intensity + 1.0;
+    float light = tan(angle) * intensity + 1.0;
     float fold = -cos(angle) * intensity;
 
     vec2 pos = vec2(uv.x / dist, uv.y + fold * .03);
@@ -32,6 +32,7 @@ vec4 render(vec2 fragCoord) {
 
 vec4 main(vec2 fragCoord) {
     vec4 col = vec4(0);
+    // Antialiasing by super sampling
     for (float i=0; i<AA; i++) {
         for (float j=0; j<AA; j++) {
             vec2 o = vec2(i,j) / AA - 0.5;

@@ -85,11 +85,12 @@ fun CurtainTransition(
                     shaderBuilder.uniform("iResolution", size.width, size.height)
                     val iOffset = offset ?: Offset(size.width, 0f)
                     shaderBuilder.uniform("iOffset", iOffset.x, iOffset.y)
-                    renderEffect = ImageFilter.makeRuntimeShader(
+                    val shader = ImageFilter.makeRuntimeShader(
                         runtimeShaderBuilder = shaderBuilder,
                         shaderName = "background",
                         input = null
                     ).asComposeRenderEffect()
+                    renderEffect = shader
                 }
         ) {
             overlay()
