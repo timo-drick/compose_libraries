@@ -17,6 +17,8 @@ repositories {
 
 dependencies {
   implementation(compose.desktop.currentOs)
+  val ktorVersion = "2.3.4"
+  implementation("io.ktor:ktor-network:$ktorVersion")
 }
 
 

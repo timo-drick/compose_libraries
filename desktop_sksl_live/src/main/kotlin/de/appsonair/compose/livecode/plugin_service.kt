@@ -36,8 +36,8 @@ class RemoteLiveService(
     private val _connectedDevices = mutableStateListOf<ConnectedDevice>()
     val connectedDevices: SnapshotStateList<ConnectedDevice> = _connectedDevices
 
-    private val _broadcastingInterfaces = mutableStateListOf<InetAddress>()
-    val broadcastingInterfaces: SnapshotStateList<InetAddress> = _broadcastingInterfaces
+    private val _broadcastingInterfaces = mutableStateListOf<InterfaceAddress>()
+    val broadcastingInterfaces: SnapshotStateList<InterfaceAddress> = _broadcastingInterfaces
 
     private val folderMap = mutableMapOf<String, StateFlow<String>>()
 
@@ -80,13 +80,13 @@ class RemoteLiveService(
 
                 val interfaces = listAllBroadcastAddresses()
                 log("Detected interfaces:")
-                interfaces.forEach { log(it.hostAddress) }
+                interfaces.forEach { log(it.address) }
                 _broadcastingInterfaces.clear()
                 _broadcastingInterfaces.addAll(interfaces)
                 while (isActive && stopServers.not()) {
-                    interfaces.forEach { address ->
-                        log("Send: ${address.hostAddress}")
-                        val packet = DatagramPacket(buffer, buffer.size, address, 6789)
+                    interfaces.forEach { interfaceAddress ->
+                        val broadcast = interfaceAddress.broadcast
+                        val packet = DatagramPacket(buffer, buffer.size, broadcast, 6789)
                         socket.send(packet)
                     }
                     delay(1000)
@@ -113,9 +113,9 @@ class RemoteLiveService(
                         try {
                             clientSocket.use { clientSocket ->
                                 log("Client connection established: ${clientSocket.localAddress}")
-                                startClientConnection(clientSocket, established = {  path ->
+                                startClientConnection(clientSocket, established = { path ->
                                     connectedDevice = ConnectedDevice(
-                                        name = clientSocket.localAddress.toString(),
+                                        name = clientSocket.remoteAddress.toString(),
                                         path = path
                                     ).also {
                                         _connectedDevices.add(it)
@@ -142,7 +142,7 @@ class RemoteLiveService(
         val inStream = tcpSocket.openReadChannel()
         val firstLine = inStream.readUTF8Line()
         log("Received: $firstLine")
-        val file = firstLine?.let { File(it) }
+        val file = firstLine?.let { File(basePath, it) }
         if (file != null) {
             established(firstLine)
             //load code
@@ -152,7 +152,7 @@ class RemoteLiveService(
                 textFileAsFlow(file).stateIn(scope)
             }
             flow.collect { newContent ->
-                if (isActive && tcpSocket.isActive) {
+                if (isActive) {
                     sendFile(outStream, firstLine, newContent)
                 }
             }
@@ -170,11 +170,11 @@ suspend fun sendFile(outStream: ByteWriteChannel, name: String, content: String)
 
 
 @Throws(SocketException::class)
-fun listAllBroadcastAddresses(): List<InetAddress> =
+fun listAllBroadcastAddresses(): List<InterfaceAddress> =
     NetworkInterface.getNetworkInterfaces().asSequence()
         .filter { it.isLoopback.not() && it.isUp }
         .flatMap { it.interfaceAddresses }
-        .mapNotNull { it.broadcast }
+        .filter { it.broadcast != null }
         .toList()
 
 fun textFileAsFlow(file: File) = flow<String> {
@@ -198,24 +198,3 @@ fun textFileAsFlow(file: File) = flow<String> {
         }
     }
 }.flowOn(Dispatchers.IO)
-
-
-fun CoroutineScope.watchFileChange(file: File): Boolean {
-    val watchService = FileSystems.getDefault().newWatchService()
-    file.parentFile.toPath().register(watchService, StandardWatchEventKinds.ENTRY_MODIFY)
-
-    var fileChanged = false
-    while (fileChanged.not() && isActive) {
-        val watchKey = watchService.take()
-        for (event in watchKey.pollEvents()) {
-            if (event.context().toString() == file.name) fileChanged = true
-            log("event: ${event.kind()} context: ${event.context()} ${event.count()}")
-        }
-        if (!watchKey.reset() || fileChanged) {
-            watchKey.cancel()
-            watchService.close()
-            break
-        }
-    }
-    return fileChanged
-}

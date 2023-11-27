@@ -1,6 +1,5 @@
 package de.appsonair.compose.livecode
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
@@ -16,19 +15,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.singleWindowApplication
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import java.io.File
-import java.net.InetAddress
-import java.nio.file.FileSystems
-import java.nio.file.Path
-import java.nio.file.StandardWatchEventKinds
-import kotlin.io.path.Path
 
-private const val PROJECT_FOLDER = "/home/timo/github/compose_libraries"
+private const val PROJECT_FOLDER = "/home/timo/projects/compose/github/compose_libraries"
 
 fun main()  {
     val service = RemoteLiveService(PROJECT_FOLDER)
@@ -39,13 +28,6 @@ fun main()  {
             MainScreen(service)
         }
     }
-}
-
-
-@Preview
-@Composable
-fun PreviewMain() {
-
 }
 
 @Composable
@@ -59,7 +41,6 @@ fun MainScreen(service: RemoteLiveService) {
         Box(Modifier.padding(16.dp)) {
             if (serviceIsRunning) {
                 Column {
-                    CircularProgressIndicator()
                     Text("Project path: ${service.basePath}")
                     ProgressButton(
                         onClick = { service.stopService() }
@@ -71,7 +52,7 @@ fun MainScreen(service: RemoteLiveService) {
                             Text("Broadcasting on:")
                         }
                         items(interfaceList) { address ->
-                            Text(address.toString())
+                            Text("${address.address} - > ${address.broadcast}")
                         }
                         item {
                             Text("Connected clients and files")

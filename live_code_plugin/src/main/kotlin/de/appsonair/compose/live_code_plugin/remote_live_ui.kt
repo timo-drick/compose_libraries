@@ -27,7 +27,6 @@ fun MainScreen(basePath: String, service: RemoteLiveService) {
         Box(Modifier.padding(16.dp)) {
             if (serviceIsRunning) {
                 Column {
-                    CircularProgressIndicator()
                     Text("Project path: $basePath")
                     ProgressButton(
                         onClick = { service.stopService() }
@@ -39,7 +38,7 @@ fun MainScreen(basePath: String, service: RemoteLiveService) {
                             Text("Broadcasting on:")
                         }
                         items(interfaceList) { address ->
-                            Text(address.toString())
+                            Text("${address.address} - > ${address.broadcast}")
                         }
                         item {
                             Text("Connected clients and files")
