@@ -14,8 +14,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import java.io.File
 import java.net.*
-import java.nio.file.FileSystems
-import java.nio.file.StandardWatchEventKinds
 
 
 data class ConnectedDevice(
@@ -41,7 +39,7 @@ class RemoteLiveService : Disposable {
     private val _broadcastingInterfaces = mutableStateListOf<InterfaceAddress>()
     val broadcastingInterfaces: SnapshotStateList<InterfaceAddress> = _broadcastingInterfaces
 
-    private val folderMap = mutableMapOf<String, StateFlow<String>>()
+    private val fileWatchService = FileWatchService()
 
     init {
         log("RemoteLiveService initialized")
@@ -69,6 +67,7 @@ class RemoteLiveService : Disposable {
         stopServers = true
         remoteServiceJob?.let { job ->
             job.join()
+            fileWatchService.stopAll()
             log("Service stopped")
             isRunning = false
         }
@@ -154,9 +153,7 @@ class RemoteLiveService : Disposable {
             //load code
             log("Send file content")
             sendFile(outStream, firstLine, file.readText())
-            val flow = folderMap.getOrPut(firstLine) {
-                textFileAsFlow(file).stateIn(scope)
-            }
+            val flow = fileWatchService.getMonitor(file)
             flow.collect { newContent ->
                 if (isActive) {
                     sendFile(outStream, firstLine, newContent)
@@ -189,25 +186,3 @@ fun listAllBroadcastAddresses(): List<InterfaceAddress> =
         .flatMap { it.interfaceAddresses }
         .filter { it.broadcast != null }
         .toList()
-
-fun textFileAsFlow(file: File) = flow<String> {
-    val watchService = FileSystems.getDefault().newWatchService()
-    file.parentFile.toPath().register(watchService, StandardWatchEventKinds.ENTRY_MODIFY)
-    while (true) {
-        val watchKey = watchService.take()
-        var fileChanged = false
-        for (event in watchKey.pollEvents()) {
-            if (event.context().toString() == file.name) fileChanged = true
-            println("event: ${event.kind()} context: ${event.context()} ${event.count()}")
-        }
-        if (fileChanged) {
-            println("file changed: $file")
-            emit(file.readText())
-        }
-        if (!watchKey.reset()) {
-            watchKey.cancel()
-            watchService.close()
-            break
-        }
-    }
-}.flowOn(Dispatchers.IO)
