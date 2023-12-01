@@ -6,9 +6,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import de.drick.common.log
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -18,18 +29,22 @@ import java.net.DatagramSocket
 import java.net.Socket
 
 @Composable
-fun remoteFileAsState(absFilePath: String): String {
+fun remoteAssetAsState(fileName: String): String {
+    val ctx = LocalContext.current
+    val assetSrc = remember { ctx.assets.open(fileName).bufferedReader().readText() }
+    val remoteSrc = remoteSourceAsState("$ASSET_SRC_FOLDER/$fileName")
+    return remoteSrc.ifEmpty { assetSrc }
+}
+
+@Composable
+fun remoteSourceAsState(absFilePath: String): String {
     var fileContent by remember(absFilePath) { mutableStateOf("") }
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
-            val buf = ByteArray(20)
-            val recvPacket = DatagramPacket(buf, buf.size)
             while (isActive) {
-                val s = DatagramSocket(6789)
                 log("Wait for broadcast")
-                s.receive(recvPacket)
-                log("packet receiver: ${recvPacket.address} -> ${String(recvPacket.data, 0, 11, Charsets.UTF_8)}")
-                s.close()
+                val recvPacket = subscriptionFlow.first()//subscriptionFlow.flow.first()
+                log("Connecting")
                 // Establish connection to server
                 Socket(recvPacket.address, 6789).use { tcpSocket ->
                     val outStream = PrintWriter(tcpSocket.getOutputStream(), true)
@@ -38,7 +53,7 @@ fun remoteFileAsState(absFilePath: String): String {
                     while (tcpSocket.isConnected) {
                         try {
                             var response = inStream.readLine()
-                            log("Received: $response")
+                            //log("Received: $response")
                             if (response == "START:$absFilePath") {
                                 fileContent = buildString {
                                     while (true) {
@@ -47,7 +62,7 @@ fun remoteFileAsState(absFilePath: String): String {
                                         appendLine(response)
                                     }
                                 }
-                                log("File receiver: $fileContent")
+                                //log("File receiver: $fileContent")
                             }
                             if (response == null) break
                         } catch (err: Throwable) {
@@ -63,4 +78,45 @@ fun remoteFileAsState(absFilePath: String): String {
         }
     }
     return fileContent
+}
+
+
+private val broadcastReceiverFlow = flow<DatagramPacket> {
+    val buf = ByteArray(20)
+    val recvPacket = DatagramPacket(buf, buf.size)
+    while (currentCoroutineContext().isActive) {
+        log("Wait for broadcast")
+        DatagramSocket(6789).use { s ->
+            s.receive(recvPacket)
+        }
+        log("packet receiver: ${recvPacket.address} -> ${String(recvPacket.data, 0, 11, Charsets.UTF_8)}")
+        emit(recvPacket)
+    }
+}.flowOn(Dispatchers.IO)
+
+val scope = CoroutineScope(Dispatchers.IO)
+private val subscriptionFlow = broadcastReceiverFlow.subscriptionFlow(scope)
+
+/**
+ * Returns a shared flow which is cold. So it only processes the flow when
+ * at least one subscriber is collection from it. And it suspends the flow when no
+ * one tries to collect values.
+ */
+fun <T>Flow<T>.subscriptionFlow(scope: CoroutineScope): SharedFlow<T> {
+    val flow = this
+    val mutableFlow = MutableSharedFlow<T>()
+    scope.launch {
+        flow.collect { baseValue ->
+            if (mutableFlow.subscriptionCount.value > 0) {
+                log("emit value: subcount: ${mutableFlow.subscriptionCount.value}")
+                mutableFlow.emit(baseValue)
+            } else {
+                //Suspend until subscriptionCount > 0
+                log("wait for subscription count > 0")
+                mutableFlow.subscriptionCount.filter { it > 0 }.first()
+                log("Subscription count > 0")
+            }
+        }
+    }
+    return mutableFlow
 }

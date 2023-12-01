@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import de.drick.common.LogConfig
-import de.drick.common.log
 import de.drick.compose.opengl.PixelShaderSamples
 import de.drick.compose.progress_indication.ProgressOverlay
 import de.drick.compose.sample.theme.SampleTheme
@@ -34,29 +31,10 @@ import de.drick.compose.sample.ui.animation.SHADER_SPINNER_SPHERE_3D
 import de.drick.compose.sample.ui.animation.SHADER_WHEEL
 import de.drick.compose.sample.ui.animation.ShaderAnimation
 import de.drick.compose.sample.ui.animation.ShinyButton
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.io.PrintWriter
-import java.net.DatagramPacket
-import java.net.DatagramSocket
-import java.net.InetAddress
-import java.net.MulticastSocket
-import java.net.Socket
 
-@RequiresApi(33)
-@Composable
-fun ShaderScreen() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .backgroundShader(shaderCode)
-    )
-}
+const val ASSET_SRC_FOLDER = "app/src/main/assets"
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,13 +67,12 @@ enum class LoadingShader(val src: String, val loopDuration: Int = 2000) {
 fun MainScreen() {
     val scope = rememberCoroutineScope()
 
-    val shaderSrc = remoteFileAsState("app/src/main/assets/live.agsl")
     val snackbarHostState = remember { SnackbarHostState() }
 
     var loadingShader: LoadingShader? by remember { mutableStateOf(null) }
     val isLoading by remember { derivedStateOf { loadingShader != null }}
 
-    var currentScreen: Screens? by remember { mutableStateOf(Screens.AnimationShader) }
+    var currentScreen: Screens? by remember { mutableStateOf(null) }
 
     val backNavigationEnabled by remember {
         derivedStateOf { currentScreen != null }
@@ -122,7 +99,7 @@ fun MainScreen() {
         Modifier
             .fillMaxSize()
             .backgroundShader(
-                shaderSrc = shaderAOABackground,
+                shaderSrc = remoteAssetAsState("shader/aoa_background.agsl"),
                 background = shaderBackground,
                 primary = shaderPrimary
             )
@@ -160,7 +137,7 @@ fun MainScreen() {
                 modifier = Modifier
                     .padding(padding)
                     .fillMaxSize(),
-                shaderSrc = if (shaderSrc.isNotEmpty()) shaderSrc else SHADER_SPINNER_SPHERE_3D
+                shaderSrc = remoteAssetAsState("shader/spinner_sphere_3d.agsl")
             )
             Screens.FlameShader -> FlameScreen()
             Screens.CurtainTransitionSample -> TransitionScreen(
