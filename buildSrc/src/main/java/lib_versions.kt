@@ -1,5 +1,5 @@
 object Versions {
-    const val androidPlugin = "8.1.2"
+    const val androidPlugin = "8.2.0"
     const val benManesPlugin = "0.48.0"
     const val spotless = "6.16.0"
     const val kotlin = "1.9.10"

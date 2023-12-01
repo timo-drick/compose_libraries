@@ -45,10 +45,18 @@ tasks {
     ideDir.set(file("/home/timo/devutils/android-studio"))
   }
 
-  /*patchPluginXml {
-    sinceBuild.set("222")
-    untilBuild.set("232.*")
-  }*/
+  patchPluginXml {
+    sinceBuild.set("223")   // intellij 2022.3
+    untilBuild.set("233.*") // intellij 2023.3
+
+    pluginDescription.set("""
+      Monitors and transfers file changes for connected Android clients that want to know when a file
+      on the developer machine is changed. </br>
+      This is used to do live coding for AGSL shaders. </br>
+      Please note that currently only text files are supported. </br>
+      Project url: https://github.com/timo-drick/compose_libraries/tree/main/live_code_plugin
+    """.trimIndent())
+  }
 
   signPlugin {
     certificateChain.set(System.getenv("CERTIFICATE_CHAIN"))
