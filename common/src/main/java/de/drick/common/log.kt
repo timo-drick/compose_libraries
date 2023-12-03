@@ -13,6 +13,10 @@ inline fun log(error: Throwable? = null, msg: () -> String) {
     if (LogConfig.isActivated) log(msg(), error)
 }
 
+fun log(error: Throwable) {
+    if (LogConfig.isActivated) log(error.message ?: "Error:", error)
+}
+
 @SuppressLint("LogNotTimber")
 fun log(msg: Any, error: Throwable? = null) {
     if (LogConfig.isActivated.not()) return

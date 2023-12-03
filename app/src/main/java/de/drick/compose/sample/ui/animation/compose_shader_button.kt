@@ -33,10 +33,10 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ShaderBrush
-import androidx.compose.ui.graphics.SolidColor
 import de.drick.common.log
 import de.drick.compose.opengl.ComposeGl
 import de.drick.compose.opengl.PixelShader
+import de.drick.compose.sample.ui.remoteAssetAsState
 import org.intellij.lang.annotations.Language
 
 @Composable
@@ -51,6 +51,7 @@ fun ShinyButton(
         onClick = onClick,
         contentPadding = PaddingValues()
     ) {
+        val buttonShineShaderSrc = remoteAssetAsState("shader/button_shine.agsl")
         if (Build.VERSION.SDK_INT >= 33) {
             Box(
                 modifier = Modifier
@@ -58,7 +59,7 @@ fun ShinyButton(
                         minWidth = ButtonDefaults.MinWidth,
                         minHeight = ButtonDefaults.MinHeight
                     )
-                    .shiny(buttonShineShader())
+                    .shiny(buttonShineShaderSrc)
                     .padding(contentPadding)
             ) {
                 content()
@@ -75,7 +76,7 @@ fun ShinyButton(
             ) {
                 ButtonShader(
                     modifier = Modifier.fillMaxSize(),
-                    shaderSrc = buttonShineShader()
+                    shaderSrc = buttonShineShaderSrc
                 )
                 Box(Modifier.padding(contentPadding)) {
                     content()
@@ -127,7 +128,7 @@ fun ButtonShader(
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            tween(3300, easing = LinearEasing),
+            tween(1300, easing = LinearEasing),
         )
     )
     var error by remember { mutableStateOf(false) }

@@ -10,13 +10,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import de.drick.common.log
 import de.drick.compose.opengl.ComposeGl
@@ -39,11 +37,6 @@ val shaderCode = """
     }
 """.trimIndent()
 
-@Composable
-fun SimpleShader() {
-
-}
-
 @RequiresApi(33)
 fun RuntimeShader.setColorUniform(uniformName: String, color: Color) =
     setColorUniform(uniformName, color.toArgb())
@@ -53,8 +46,7 @@ fun Modifier.backgroundShader(
     shaderSrc: String,
     background: Color? = null,
     primary: Color? = null
-): Modifier = if (Build.VERSION.SDK_INT >= 33)
-    this.drawWithCache {
+): Modifier = if (Build.VERSION.SDK_INT >= 33) this.drawWithCache {
     val shader = RuntimeShader(shaderSrc)
     val brush = ShaderBrush(shader)
     if (background != null) {
@@ -67,6 +59,43 @@ fun Modifier.backgroundShader(
         drawRect(brush)
     }
 } else if (background != null) this.background(background) else this
+
+@Composable
+fun BackgroundShader(
+    modifier: Modifier = Modifier,
+    shaderSrc: String,
+    background: Color? = null,
+    primary: Color? = null
+) {
+    if (Build.VERSION.SDK_INT >= 33) {
+        Spacer(
+            modifier = modifier.drawWithCache {
+                val shader = RuntimeShader(shaderSrc)
+                val brush = ShaderBrush(shader)
+                if (background != null) {
+                    shader.setColorUniform("background", background)
+                }
+                if (primary != null) {
+                    shader.setColorUniform("primary", primary)
+                }
+                onDrawBehind {
+                    drawRect(brush)
+                }
+            }
+        )
+    } else {
+        val shader = remember {
+            PixelShader(shaderSrc)
+        }
+        if (background != null) {
+            shader.setColorUniform("background", background)
+        }
+        if (primary != null) {
+            shader.setColorUniform("primary", primary)
+        }
+        ComposeGl(renderer = shader.renderer, modifier = modifier)
+    }
+}
 
 @Language("AGSL")
 val solidColor = """

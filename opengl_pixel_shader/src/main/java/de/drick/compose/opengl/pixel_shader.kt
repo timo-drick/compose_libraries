@@ -31,7 +31,7 @@ val simpleFragmentShader = """
  * Shader that uses a rectangular geometry which
  */
 class PixelShader(
-    agslShaderSrc: String = simpleFragmentShader,
+    private val agslShaderSrc: String = simpleFragmentShader,
     onErrorFallback: () -> Unit = {}
 ) {
     private val agslPrefix = "AGSLXXYY"
@@ -257,6 +257,7 @@ class PixelShader(
         if (compileStatusArray.first() == 0) {
             log("$shaderCode \n : ${GLES31.glGetShaderInfoLog(shaderId)}")
             GLES31.glDeleteShader(shaderId)
+            log("AGSL code: $agslShaderSrc")
             throw IllegalStateException("Shader compilation failed!")
         }
 

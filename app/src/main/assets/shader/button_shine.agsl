@@ -1,0 +1,14 @@
+uniform float2 iResolution;
+uniform float iTime;
+
+half4 main(vec2 fragCoord) {
+    fragCoord /= iResolution.x; // scale to device width
+    float timePos = iTime * 3.0;
+    float width = 0.1;
+    float pos = fragCoord.x + fragCoord.y * .4;
+    float highLight = smoothstep(timePos -width, timePos, pos);
+    highLight -= smoothstep(timePos, timePos + width, pos);
+    //highLight = max(0.0, highLight);
+    vec3 col = vec3(.8, 0.2, 0.5) * highLight;
+    return vec4(col, highLight);
+}

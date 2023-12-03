@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import de.drick.common.log
+import de.drick.compose.sample.BuildConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
@@ -22,62 +23,74 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
+import java.io.IOException
 import java.io.InputStreamReader
 import java.io.PrintWriter
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.Socket
 
+// Asset folder inside of the project.
+const val ASSET_SRC_FOLDER = "app/src/main/assets"
+
 @Composable
 fun remoteAssetAsState(fileName: String): String {
     val ctx = LocalContext.current
-    val assetSrc = remember { ctx.assets.open(fileName).bufferedReader().readText() }
+    val assetSrc = remember(fileName) {
+        ctx.assets.open(fileName).bufferedReader().readText().also {
+            if (it.isBlank()) throw IOException("Asset file: $fileName does not exists or is empty!")
+        }
+    }
     val remoteSrc = remoteSourceAsState("$ASSET_SRC_FOLDER/$fileName")
-    return remoteSrc.ifEmpty { assetSrc }
+    return remoteSrc ?: assetSrc
 }
 
 @Composable
-fun remoteSourceAsState(absFilePath: String): String {
-    var fileContent by remember(absFilePath) { mutableStateOf("") }
-    LaunchedEffect(Unit) {
-        withContext(Dispatchers.IO) {
-            while (isActive) {
-                log("Wait for broadcast")
-                val recvPacket = subscriptionFlow.first()//subscriptionFlow.flow.first()
-                log("Connecting")
-                // Establish connection to server
-                Socket(recvPacket.address, 6789).use { tcpSocket ->
-                    val outStream = PrintWriter(tcpSocket.getOutputStream(), true)
-                    val inStream = BufferedReader(InputStreamReader(tcpSocket.getInputStream()))
-                    outStream.println(absFilePath)
-                    while (tcpSocket.isConnected) {
-                        try {
-                            var response = inStream.readLine()
-                            //log("Received: $response")
-                            if (response == "START:$absFilePath") {
-                                fileContent = buildString {
-                                    while (true) {
-                                        response = inStream.readLine()
-                                        if (response == "STOP:$absFilePath") break
-                                        appendLine(response)
+fun remoteSourceAsState(absFilePath: String): String? {
+    if (BuildConfig.DEBUG) {
+        var fileContent: String? by remember(absFilePath) { mutableStateOf(null) }
+        LaunchedEffect(Unit) {
+            withContext(Dispatchers.IO) {
+                while (isActive) {
+                    log("Wait for broadcast")
+                    val recvPacket = subscriptionFlow.first()//subscriptionFlow.flow.first()
+                    log("Connecting")
+                    // Establish connection to server
+                    Socket(recvPacket.address, 6789).use { tcpSocket ->
+                        val outStream = PrintWriter(tcpSocket.getOutputStream(), true)
+                        val inStream = BufferedReader(InputStreamReader(tcpSocket.getInputStream()))
+                        outStream.println(absFilePath)
+                        while (tcpSocket.isConnected) {
+                            try {
+                                var response = inStream.readLine()
+                                //log("Received: $response")
+                                if (response == "START:$absFilePath") {
+                                    fileContent = buildString {
+                                        while (true) {
+                                            response = inStream.readLine()
+                                            if (response == "STOP:$absFilePath") break
+                                            appendLine(response)
+                                        }
                                     }
+                                    //log("File receiver: $fileContent")
                                 }
-                                //log("File receiver: $fileContent")
+                                if (response == null) break
+                            } catch (err: Throwable) {
+                                log(err)
                             }
-                            if (response == null) break
-                        } catch (err: Throwable) {
-                            log(err)
                         }
+                        log("Socket closed")
+                        outStream.close()
+                        inStream.close()
                     }
-                    log("Socket closed")
-                    outStream.close()
-                    inStream.close()
                 }
+                log("Finished")
             }
-            log("Finished")
         }
+        return fileContent
+    } else {
+        return null
     }
-    return fileContent
 }
 
 
@@ -99,7 +112,7 @@ private val subscriptionFlow = broadcastReceiverFlow.subscriptionFlow(scope)
 
 /**
  * Returns a shared flow which is cold. So it only processes the flow when
- * at least one subscriber is collection from it. And it suspends the flow when no
+ * at least one subscriber is consuming it. And it suspends the flow when no
  * one tries to collect values.
  */
 fun <T>Flow<T>.subscriptionFlow(scope: CoroutineScope): SharedFlow<T> {

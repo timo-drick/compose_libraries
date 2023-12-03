@@ -34,8 +34,6 @@ import de.drick.compose.sample.ui.animation.ShinyButton
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-const val ASSET_SRC_FOLDER = "app/src/main/assets"
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,14 +93,11 @@ fun MainScreen() {
             )
         }
     }
-    Box(
-        Modifier
-            .fillMaxSize()
-            .backgroundShader(
-                shaderSrc = remoteAssetAsState("shader/aoa_background.agsl"),
-                background = shaderBackground,
-                primary = shaderPrimary
-            )
+    BackgroundShader(
+        modifier = Modifier.fillMaxSize(),
+        shaderSrc = remoteAssetAsState("shader/aoa_background.agsl"),
+        background = shaderBackground,
+        primary = shaderPrimary
     )
     // A surface container using the 'background' color from the theme
     Scaffold(
