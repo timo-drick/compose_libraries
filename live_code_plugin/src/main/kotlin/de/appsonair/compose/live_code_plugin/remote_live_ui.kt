@@ -1,9 +1,6 @@
 package de.appsonair.compose.live_code_plugin
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Button
@@ -33,7 +30,9 @@ fun MainScreen(basePath: String, service: RemoteLiveService) {
                     ) {
                         Text("Stop live code service")
                     }
-                    LazyColumn {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         item {
                             Text("Broadcasting on:")
                         }
