@@ -1,5 +1,6 @@
 package de.drick.compose.sample.ui
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -7,7 +8,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import de.drick.common.log
 import de.drick.compose.sample.BuildConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,9 +37,7 @@ const val ASSET_SRC_FOLDER = "app/src/main/assets"
 fun remoteAssetAsState(fileName: String): String {
     val ctx = LocalContext.current
     val assetSrc = remember(fileName) {
-        ctx.assets.open(fileName).bufferedReader().readText().also {
-            if (it.isBlank()) throw IOException("Asset file: $fileName does not exists or is empty!")
-        }
+        ctx.assets.open(fileName).bufferedReader().readText()
     }
     val remoteSrc = remoteSourceAsState("$ASSET_SRC_FOLDER/$fileName")
     return remoteSrc ?: assetSrc
@@ -132,4 +130,8 @@ fun <T>Flow<T>.subscriptionFlow(scope: CoroutineScope): SharedFlow<T> {
         }
     }
     return mutableFlow
+}
+
+fun log(msg: String) {
+    Log.d("RemoteLiveCoding", msg)
 }
