@@ -63,9 +63,12 @@ fun PieChart(modifier: Modifier) {
 
     val rotationVector = rememberRotationVector()
 
+    val pieShaderSrc = rememberAssetString("shader/pie_chart_3d.agsl")
+
     if (Build.VERSION.SDK_INT >= 33) {
-        val infiniteTransition = rememberInfiniteTransition()
+        val infiniteTransition = rememberInfiniteTransition("infinte timer")
         val time = infiniteTransition.animateFloat(
+            label = "shader time",
             initialValue = 0f,
             targetValue = PI.toFloat() * 2f,
             animationSpec = infiniteRepeatable(
@@ -73,9 +76,8 @@ fun PieChart(modifier: Modifier) {
                 repeatMode = RepeatMode.Restart,
             )
         )
-        val pieShader = remember {
-            val shaderSrc = ctx.assets.open("test.glsl").bufferedReader().readText()
-            RuntimeShader(shaderSrc)
+        val pieShader = remember(pieShaderSrc) {
+            RuntimeShader(pieShaderSrc)
         }
         val multisampleShader = remember {
             RuntimeShader(multisampleSrc)
@@ -129,10 +131,7 @@ fun PieChart(modifier: Modifier) {
                 interactionSource = remember { MutableInteractionSource() })
         )
     } else {
-        val pieShader = remember {
-            val shaderSrc = ctx.assets.open("test.glsl").bufferedReader().readText()
-            PixelShader(shaderSrc)
-        }
+        val pieShader = remember(pieShaderSrc) { PixelShader(pieShaderSrc) }
         val rv = rotationVector.value
         log("set r: ${rv[0]}, ${rv[1]}, ${rv[2]}")
         pieShader.setFloatUniform("iLightDir", rv[0], rv[1], rv[2])

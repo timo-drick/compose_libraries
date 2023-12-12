@@ -34,6 +34,14 @@ import java.net.Socket
 const val ASSET_SRC_FOLDER = "app/src/main/assets"
 
 @Composable
+fun rememberAssetString(fileName: String): String {
+    val ctx = LocalContext.current
+    return remember(fileName) {
+        ctx.assets.open(fileName).bufferedReader().readText()
+    }
+}
+
+@Composable
 fun remoteAssetAsState(fileName: String): String {
     val ctx = LocalContext.current
     val assetSrc = remember(fileName) {
@@ -109,8 +117,8 @@ val scope = CoroutineScope(Dispatchers.IO)
 private val subscriptionFlow = broadcastReceiverFlow.subscriptionFlow(scope)
 
 /**
- * Returns a shared flow which is cold. So it only processes the flow when
- * at least one subscriber is consuming it. And it suspends the flow when no
+ * Returns a shared flow which is cold. So it only consumes the flow when
+ * at least one subscriber is consuming it as well. And it suspends the flow when no
  * one tries to collect values.
  */
 fun <T>Flow<T>.subscriptionFlow(scope: CoroutineScope): SharedFlow<T> {
@@ -130,6 +138,11 @@ fun <T>Flow<T>.subscriptionFlow(scope: CoroutineScope): SharedFlow<T> {
         }
     }
     return mutableFlow
+}
+
+
+fun log(err: Throwable) {
+    Log.e("RemoteLiveCoding", err.message, err)
 }
 
 fun log(msg: String) {

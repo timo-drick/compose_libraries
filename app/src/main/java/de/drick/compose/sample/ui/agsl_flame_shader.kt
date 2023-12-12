@@ -28,7 +28,6 @@ import de.drick.compose.sample.R
  * From ShaderToy: https://www.shadertoy.com/view/MdjfRK
  */
 const val GlowSource = """
-uniform shader glowComposable;
 uniform float2 iResolution;          // viewport resolution (in pixels)
 uniform float iTime;                 // shader playback time (in seconds)
 

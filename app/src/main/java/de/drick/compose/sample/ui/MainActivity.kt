@@ -132,7 +132,7 @@ fun MainScreen() {
                 modifier = Modifier
                     .padding(padding)
                     .fillMaxSize(),
-                shaderSrc = remoteAssetAsState("shader/spinner_sphere_3d.agsl")
+                shaderSrc = rememberAssetString("shader/spinner_sphere_3d.agsl")
             )
             Screens.FlameShader -> FlameScreen()
             Screens.CurtainTransitionSample -> TransitionScreen(

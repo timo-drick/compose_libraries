@@ -58,6 +58,7 @@ class PixelShader(
             .replace("float2", "vec2")
             .replace("float3", "vec3")
             .replace("float4", "vec4")
+            .replace("layout(color)", "")
             .replace("main(", "main$agslPrefix(")
         @Language("GLSL")
         val tmp = """
@@ -127,6 +128,7 @@ class PixelShader(
         setFloatUniform(name, 4, floatArrayOf(value1, value2, value3, value4))
     }
     fun setColorUniform(name: String, color: Color) {
+        //TODO maybe apply color space conversions here
         setFloatUniform(name, 4, floatArrayOf(color.red, color.green, color.blue, color.alpha))
     }
     fun setFloatUniform1f(name: String, values: FloatArray) {

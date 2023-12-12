@@ -101,11 +101,11 @@ fun PixelShaderSample1(modifier: Modifier) {
 fun PixelShaderSample2ColorUniform(modifier: Modifier) {
     val pixelShader = remember {
         PixelShader("""
-    layout(color) uniform half4 iColor;
-   half4 main(float2 fragCoord) {
-      return iColor;
-   }
-""")
+        layout(color) uniform half4 iColor;
+        half4 main(float2 fragCoord) {
+            return iColor;
+        }
+        """)
     }
     pixelShader.setColorUniform("iColor", Color.Green)
     ComposeGl(
