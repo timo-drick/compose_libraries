@@ -33,7 +33,6 @@ class LiveCodeToolWindow(
     init {
         println("Create toolwindow")
         val composePanel = ComposePanel().apply {
-            setBounds(0, 0, 800, 600)
             setContent {
                 WidgetTheme(darkTheme = true) {
                     Surface(modifier = Modifier.fillMaxSize()) {
@@ -42,7 +41,8 @@ class LiveCodeToolWindow(
                 }
             }
         }
-        addToCenter(composePanel)
+        composePanel.bounds = bounds
+        add(composePanel)
     }
 
     override fun dispose() {
