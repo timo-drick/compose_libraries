@@ -1,5 +1,6 @@
 package de.drick.compose.sample.ui
 
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -20,6 +21,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import de.drick.common.LogConfig
 import de.drick.compose.opengl.PixelShaderSamples
 import de.drick.compose.progress_indication.ProgressOverlay
@@ -60,9 +63,17 @@ enum class LoadingShader(val src: String, val loopDuration: Int = 2000) {
     SPHERE_3D(SHADER_SPINNER_SPHERE_3D, 3000)
 }
 
+class MainVM(val ctx: Application) : AndroidViewModel(ctx) {
+    var currentScreen: Screens? by mutableStateOf(null)
+        private set
+    fun setScreen(screen: Screens?) {
+        currentScreen = screen
+    }
+}
+
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun MainScreen() {
+fun MainScreen(vm: MainVM = viewModel()) {
     val scope = rememberCoroutineScope()
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -70,18 +81,16 @@ fun MainScreen() {
     var loadingShader: LoadingShader? by remember { mutableStateOf(null) }
     val isLoading by remember { derivedStateOf { loadingShader != null }}
 
-    var currentScreen: Screens? by remember { mutableStateOf(null) }
-
     val backNavigationEnabled by remember {
-        derivedStateOf { currentScreen != null }
+        derivedStateOf { vm.currentScreen != null }
     }
     val topBarName by remember {
-        derivedStateOf { currentScreen?.name ?: "Compose shader" }
+        derivedStateOf { vm.currentScreen?.name ?: "Compose shader" }
     }
     BackHandler(
         enabled = backNavigationEnabled,
         onBack = {
-            currentScreen = null
+            vm.setScreen(null)
         }
     )
     ProgressOverlay(isVisible = isLoading) {
@@ -112,7 +121,7 @@ fun MainScreen() {
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                 navigationIcon = {
                     if (backNavigationEnabled) {
-                        IconButton(onClick = { currentScreen = null }) {
+                        IconButton(onClick = { vm.setScreen(null) }) {
                             Icon(
                                 imageVector = Icons.Default.ArrowBack,
                                 contentDescription = "navigate back"
@@ -123,7 +132,7 @@ fun MainScreen() {
             )
         }
     ) { padding ->
-        when (currentScreen) {
+        when (vm.currentScreen) {
             Screens.SimpleShader -> PixelShaderSamples()
             Screens.ChartShader -> PieChart(modifier = Modifier
                 .padding(padding)
@@ -149,11 +158,11 @@ fun MainScreen() {
                 ) {
                     items(Screens.values()) { screen ->
                         if (screen == Screens.CurtainTransitionSample) {
-                            ShinyButton(onClick = { currentScreen = screen }) {
+                            ShinyButton(onClick = { vm.setScreen(screen) }) {
                                 Text(text = screen.name)
                             }
                         } else {
-                            Button(onClick = { currentScreen = screen }) {
+                            Button(onClick = { vm.setScreen(screen) }) {
                                 Text(text = screen.name)
                             }
                         }

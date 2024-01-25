@@ -99,7 +99,7 @@ fun main() = application {
             initialValue = 0f,
             targetValue = 1f,
             animationSpec = infiniteRepeatable(
-                animation = tween(1400, easing = LinearEasing),
+                animation = tween(2000, easing = LinearEasing),
                 repeatMode = RepeatMode.Restart,
             )
         )
