@@ -17,7 +17,7 @@ enum class InsetPos {
 }
 
 interface InsetsDsl {
-    fun setInset(pos: InsetPos, @InsetsType type: Int, size: Int)
+    fun setInset(pos: InsetPos, @InsetsType type: Int, size: Int, isVisible: Boolean)
 }
 
 /**
@@ -29,15 +29,18 @@ private class WindowInsetsStateImpl(
     override fun update(block: InsetsDsl.() -> Unit) {
         val dsl = object : InsetsDsl {
             val builder = WindowInsetsCompat.Builder()
-            override fun setInset(pos: InsetPos, @InsetsType type: Int, size: Int) {
-                val rect = android.graphics.Rect()
-                when (pos) {
-                    InsetPos.LEFT -> rect.left = size
-                    InsetPos.RIGHT -> rect.right = size
-                    InsetPos.TOP -> rect.top = size
-                    InsetPos.BOTTOM -> rect.bottom = size
+            override fun setInset(pos: InsetPos, @InsetsType type: Int, size: Int, isVisible: Boolean) {
+                val insets = when (pos) {
+                    InsetPos.LEFT -> Insets.of(size, 0,0,0)
+                    InsetPos.RIGHT -> Insets.of(0, 0,size,0)
+                    InsetPos.TOP -> Insets.of(0, size,0,0)
+                    InsetPos.BOTTOM -> Insets.of(0, 0,0,size)
                 }
-                builder.setInsets(type, Insets.of(rect))
+                if (isVisible) {
+                    builder.setInsets(type, insets)
+                }
+                builder.setInsetsIgnoringVisibility(type, insets)
+                builder.setVisible(type, isVisible)
             }
         }
         block(dsl)
