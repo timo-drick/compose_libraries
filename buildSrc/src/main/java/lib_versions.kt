@@ -10,11 +10,14 @@ object Versions {
     const val lifecycle = "2.7.0"
     const val datastore = "1.0.0"
 
-    const val composeCompiler = "1.5.8"
+    const val composeCompiler = "1.5.9"
     const val activityCompose = "1.8.2"
-    const val composeBom = "2024.01.00"
-    const val composeDesktop = "1.5.11"
-    const val accompanist = "0.34.0" //compose ui 1.5.x
+    //const val activityCompose = "1.9.0-alpha03"
+    const val composeBom = "2024.02.00"
+    const val composeDesktop = "1.6.0-rc02"
+    const val accompanist = "0.34.0" //compose ui 1.6.x
+
+    const val ktor = "2.3.8"
 
     const val junit = "4.13.2"
     const val extJunit = "1.1.5"
