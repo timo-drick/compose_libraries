@@ -23,18 +23,28 @@ import org.jetbrains.skia.RuntimeShaderBuilder
 import java.io.File
 import kotlin.math.roundToInt
 
-/*fun main() {
-    val time = 1400f
+fun main() {
+    val shaderFile = File("desktop_sksl_live/test.glsl")
+    val outputFolder = File("/home/timo/gitlab/blog/agsl/animation")
+    val size = Size(1024f, 512f)
+    /*createSKSKImage(
+        shaderFile = shaderFile,
+        outputFolder = outputFolder,
+        fileName = "shader_2_circle_no_smoothstep.png",
+        size = size
+    )*/
+    val time = 2000f
     val steps = (time / 30f).roundToInt()
     sampleCreateSKSLImageSequence(
-        shaderFile = File("desktop_sksl_live/test.glsl"),
+        shaderFile = shaderFile,
         steps = steps,
-        outputFolder = File("/home/timo/gitlab/blog/agsl/animation"),
-        fileName = "shine_button_compose"
+        outputFolder = outputFolder,
+        fileName = "kitt_long",
+        size = size
     )
-}*/
+}
 
-fun main() {
+/*fun main() {
     val time = 2000f
     val steps = (time / 30f).roundToInt()
     createComposeAnimation(
@@ -48,7 +58,7 @@ fun main() {
             }
         }
     }
-}
+}*/
 
 fun createComposeAnimation(
     steps: Int,
@@ -83,22 +93,33 @@ fun createComposeAnimation(
     }
 }
 
+fun createSKSKImage(
+    shaderFile: File,
+    outputFolder: File,
+    fileName: String,
+    size: Size
+) {
+    val shader = RuntimeEffect.makeForShader(shaderFile.readText())
+    val sampleImage = drawToImage(shader, 0f, size)
+    saveImage(sampleImage, File(outputFolder, "$fileName"))
+}
+
 fun sampleCreateSKSLImageSequence(
     shaderFile: File,
     steps: Int,
     outputFolder: File,
-    fileName: String
+    fileName: String,
+    size: Size,
+    backgroundColor: Color? = null
 ) {
-    val backgroundColor = Color.Black//Color(0xFFF3F6F8)
-    val size = Size(512f, 128f)
     val shader = RuntimeEffect.makeForShader(shaderFile.readText())
     val sampleImage = drawToImage(shader, 10.toFloat() / steps.toFloat(), size)
-    val withBackground = drawImageToBackground(
+    /*val withBackground = drawImageToBackground(
         image = sampleImage,
         border = Size(64f, 64f),
         color = backgroundColor
-    )
-    saveImage(withBackground, File(outputFolder, "$fileName.webp"))
+    )*/
+    //saveImage(withBackground, File(outputFolder, "$fileName.webp"))
     createGifAnimation(
         file = File(outputFolder, "$fileName.gif"),
         sampleImage = sampleImage,
@@ -107,12 +128,16 @@ fun sampleCreateSKSLImageSequence(
     ) {
         for (i in 0 until steps) {
             val image = drawToImage(shader, i.toFloat() / steps.toFloat(), size)
-            val withBackground = drawImageToBackground(
-                image = image,
-                border = Size(64f, 64f),
-                color = backgroundColor
-            )
-            add(withBackground)
+            if (backgroundColor != null) {
+                val withBackground = drawImageToBackground(
+                    image = image,
+                    border = Size(64f, 64f),
+                    color = backgroundColor
+                )
+                add(withBackground)
+            } else {
+                add(image)
+            }
         }
     }
     /*for (i in 0 until steps) {
