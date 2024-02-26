@@ -1,6 +1,6 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
-package de.drick.compose.edgetoedgepreview.templates
+package de.drick.compose.edgetoedgepreviewlib
 
 import androidx.compose.foundation.layout.WindowInsetsHolder
 import androidx.compose.runtime.Composable

@@ -1,4 +1,4 @@
-package de.drick.compose.edgetoedgepreview.templates
+package de.drick.compose.edgetoedgepreviewlib
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
