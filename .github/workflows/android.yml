@@ -1,0 +1,18 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: registry.gitlab.com/timod/android-docker-image:34.0.0
+    timeout-minutes: 30
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build with Gradle
+      run: ./gradlew assembleDebug
