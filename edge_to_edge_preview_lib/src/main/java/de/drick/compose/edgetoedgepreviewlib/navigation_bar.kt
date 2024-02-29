@@ -33,9 +33,9 @@ fun NavigationBar(
 ) {
     val contentColor = if (isDarkMode) Color.LightGray else Color.DarkGray
     val backgroundColor = if (isDarkMode)
-        Color.White.copy(alpha = alpha)
-    else
         Color.Black.copy(alpha = alpha)
+    else
+        Color.White.copy(alpha = alpha)
     val size = 32.dp
     when {
         navMode == NavigationMode.Gesture -> {

@@ -75,7 +75,7 @@ publishing {
         register<MavenPublication>("release") {
             groupId = "de.drick.compose"
             artifactId = "edge-to-edge-preview"
-            version = "0.1"
+            version = "0.2"
 
             afterEvaluate {
                 from(components["release"])
