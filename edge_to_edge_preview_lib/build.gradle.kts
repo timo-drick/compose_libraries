@@ -87,5 +87,13 @@ publishing {
         maven {
             setUrl("$rootDir/maven_repo")
         }
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/timo-drick/compose_libraries")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
     }
 }
