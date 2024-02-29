@@ -1,0 +1,32 @@
+# This workflow will build a package using Gradle and then publish it to GitHub packages when a release is created
+
+name: Publish package to GitHub Packages
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set Up JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'zulu' # See 'Supported distributions' for available options
+        java-version: '17'
+        cache: 'gradle'
+    - name: Change wrapper permissions
+      run: chmod +x ./gradlew
+          
+    - name: Publish package
+      run: ./gradlew publish
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
