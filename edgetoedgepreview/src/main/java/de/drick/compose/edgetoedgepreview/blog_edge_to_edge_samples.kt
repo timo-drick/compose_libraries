@@ -83,10 +83,7 @@ fun BaseLayout(
             Modifier
                 .fillMaxSize()
                 .background(Color.White)) {
-            ComposeLibrariesTheme(
-                darkTheme = false,
-                content = content
-            )
+            content()
         }
     }
 }
@@ -409,6 +406,7 @@ fun insetsExcludingConsumed(insets: WindowInsets): WindowInsets {
 @Composable
 fun TestComponentWindowInsets(
     modifier: Modifier,
+    innerModifier: Modifier = Modifier,
     title: String,
     style: TextStyle = MaterialTheme.typography.headlineLarge,
     rotatedText: Boolean = false,
@@ -427,7 +425,8 @@ fun TestComponentWindowInsets(
             .background(bgStripedGreen)
             .then(insetsPadding)
             .background(bgStripedGrey)
-            .onSizeChanged { size = it },
+            .onSizeChanged { size = it }
+            .then(innerModifier),
         title = title,
         style = style,
         rotatedText = rotatedText
