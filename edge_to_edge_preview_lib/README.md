@@ -33,3 +33,7 @@ fun PreviewEdgeToEdge() {
     }
 }
 ```
+
+# Why is it good to have previews for WindowInsets?
+I wrote an article about this here:
+https://medium.com/@timo_86166/jetpack-compose-previews-for-edge-to-edge-design-a03b3a3713f3
