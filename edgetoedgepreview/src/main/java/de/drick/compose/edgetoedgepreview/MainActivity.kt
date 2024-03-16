@@ -47,10 +47,10 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.drick.compose.edgetoedgepreview.layout_experiments.consumeNonOverlappingInsets
 import de.drick.compose.edgetoedgepreviewlib.CameraCutoutMode
 import de.drick.compose.edgetoedgepreviewlib.EdgeToEdgeTemplate
 import de.drick.compose.edgetoedgepreviewlib.NavigationMode
-import de.drick.compose.edgetoedgepreviewlib.consumeNonOverlappingInsets
 import de.drick.compose.edgetoedgepreview.ui.theme.ComposeLibrariesTheme
 
 class MainActivity : ComponentActivity() {
@@ -175,7 +175,14 @@ fun InsetsTest() {
 fun InsetValues(
     insets: WindowInsets
 ) {
-    Text("insets: $insets")
+    val density = LocalDensity.current
+    val direction = LocalLayoutDirection.current
+    val left = insets.getLeft(density, direction) / density.density
+    val right = insets.getRight(density, direction) / density.density
+    val top = insets.getTop(density) / density.density
+    val bottom = insets.getBottom(density) / density.density
+
+    Text("insets: $insets -> ($left, $top, $right, $bottom)")
 }
 
 @Preview(showBackground = true, device = "spec:parent=pixel_5")

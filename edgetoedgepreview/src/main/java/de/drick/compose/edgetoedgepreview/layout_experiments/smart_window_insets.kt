@@ -1,4 +1,4 @@
-package de.drick.compose.edgetoedgepreviewlib
+package de.drick.compose.edgetoedgepreview.layout_experiments
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
@@ -135,13 +135,14 @@ fun getWindowSize(): IntSize {
 /**
  * This modifier works but not for animations. Not sure why
  */
-fun Modifier.consumeNonOverlappingInsets() = composed {
+@Composable
+fun Modifier.consumeNonOverlappingInsets(): Modifier {
     val density = LocalDensity.current
     val consumedWindowInsets = remember { MutableFixedIntPaddingValues() }
     val insets = remember { MutableFixedIntWindowInsets() }
     //var mutableInsets = remember { MutableWindowInsets() }
     val windowSize = getWindowSize()
-    this.onPlaced { coordinates ->
+    return this.onPlaced { coordinates ->
         val width = coordinates.size.width
         val height = coordinates.size.height
 
@@ -173,8 +174,7 @@ fun Modifier.windowInsetsPaddingNonOverlapping() = composed {
     //var consumedWindowInsets by remember { mutableStateOf(PaddingValues()) }
     var insets by remember { mutableStateOf(WindowInsets(left = 0)) }
     val windowSize = getWindowSize()
-    this
-        .onPlaced { coordinates ->
+    this.onPlaced { coordinates ->
             val width = coordinates.size.width
             val height = coordinates.size.height
 

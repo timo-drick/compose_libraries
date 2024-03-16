@@ -1,5 +1,6 @@
 package de.drick.compose.edgetoedgepreview
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,24 +16,30 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.drick.compose.edgetoedgepreviewlib.CameraCutoutMode
 import de.drick.compose.edgetoedgepreviewlib.EdgeToEdgeTemplate
 import de.drick.compose.edgetoedgepreviewlib.NavigationMode
 
-@Preview(device = "spec:parent=pixel_5,orientation=portrait")
+@Preview(name = "portrait", device = "spec:width=300dp,height=600dp,dpi=440")
+@Preview(name = "landscape", device = "spec:width=300dp,height=600dp,dpi=440,orientation=landscape")
+annotation class SampleBlogPreviews
+
+@SampleBlogPreviews
 @Composable
 fun PreviewEdgeToEdgePortrait() {
     EdgeToEdgeTemplate(
         navMode = NavigationMode.ThreeButton,
-        cameraCutoutMode = CameraCutoutMode.Middle,
+        cameraCutoutMode = CameraCutoutMode.End,
         showInsetsBorder = true,
     ) {
-        SamplePortraitContentAppBar()
+        PreviewContentAppBar()
     }
 }
-@Preview(device = "spec:parent=pixel_5,orientation=portrait")
+
+@SampleBlogPreviews
 @Composable
 fun PreviewEdgeToEdgePortrait2() {
     EdgeToEdgeTemplate(
@@ -40,10 +47,11 @@ fun PreviewEdgeToEdgePortrait2() {
         cameraCutoutMode = CameraCutoutMode.Middle,
         showInsetsBorder = true,
     ) {
-        SamplePortraitContentAppBar()
+        PreviewContentAppBar()
     }
 }
-@Preview(device = "spec:parent=pixel_5,orientation=portrait")
+
+@SampleBlogPreviews
 @Composable
 fun PreviewEdgeToEdgePortrait3() {
     EdgeToEdgeTemplate(
@@ -52,51 +60,20 @@ fun PreviewEdgeToEdgePortrait3() {
         showInsetsBorder = true,
         isInvertedOrientation = true
     ) {
+        PreviewContentAppBar()
+    }
+}
+
+@Composable
+private fun PreviewContentAppBar() {
+    if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        SampleLandscapeContentAppBar()
+    } else {
         SamplePortraitContentAppBar()
     }
 }
 
-@Preview(device = "spec:parent=pixel_5,orientation=landscape")
-@Composable
-fun PreviewEdgeToEdgeLandscape() {
-    EdgeToEdgeTemplate(
-        navMode = NavigationMode.ThreeButton,
-        cameraCutoutMode = CameraCutoutMode.Middle,
-        showInsetsBorder = true,
-        isStatusBarVisible = true,
-        isNavigationBarVisible = true,
-        isInvertedOrientation = false
-    ) {
-        SampleLandscapeContentAppBar()
-    }
-}
 
-@Preview(device = "spec:parent=pixel_5,orientation=landscape")
-@Composable
-fun PreviewEdgeToEdgeLandscape3() {
-    EdgeToEdgeTemplate(
-        navMode = NavigationMode.ThreeButton,
-        cameraCutoutMode = CameraCutoutMode.Middle,
-        showInsetsBorder = true,
-        isStatusBarVisible = true,
-        isNavigationBarVisible = true,
-        isInvertedOrientation = true
-    ) {
-        SampleLandscapeContentAppBar()
-    }
-}
-
-@Preview(device = "spec:parent=pixel_5,orientation=landscape")
-@Composable
-fun PreviewEdgeToEdgeLandscape2() {
-    EdgeToEdgeTemplate(
-        navMode = NavigationMode.Gesture,
-        cameraCutoutMode = CameraCutoutMode.Start,
-        showInsetsBorder = true,
-    ) {
-        SampleLandscapeContentAppBar()
-    }
-}
 @Composable
 fun SamplePortraitContentAppBar() {
     Column(
@@ -108,7 +85,7 @@ fun SamplePortraitContentAppBar() {
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            title = "Main content",
+            title = "Main Content",
             windowInsets = WindowInsets.safeDrawing.only(
                 WindowInsetsSides.Horizontal +
                         WindowInsetsSides.Top
@@ -117,7 +94,7 @@ fun SamplePortraitContentAppBar() {
         TestComponentWindowInsets(
             modifier = Modifier.fillMaxWidth(),
             innerModifier = Modifier.height(80.dp),
-            title = "App navigation bar",
+            title = "Navigation Bar",
             windowInsets = WindowInsets.safeDrawing.only(
                 WindowInsetsSides.Horizontal +
                         WindowInsetsSides.Bottom
@@ -134,9 +111,11 @@ fun SampleLandscapeContentAppBar() {
             .fillMaxSize()
     ) {
         TestComponentWindowInsets(
-            modifier = Modifier.fillMaxHeight().width(140.dp),
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(140.dp),
             //innerModifier = Modifier.height(80.dp),
-            title = "App navigation bar",
+            title = "Navigation Bar",
             windowInsets = WindowInsets.safeDrawing.only(
                 WindowInsetsSides.Start +
                         WindowInsetsSides.Vertical),
@@ -146,7 +125,7 @@ fun SampleLandscapeContentAppBar() {
             modifier = Modifier
                 .fillMaxHeight()
                 .weight(1f),
-            title = "Main content",
+            title = "Main Content",
             windowInsets = WindowInsets.safeDrawing.only(
                 WindowInsetsSides.End +
                         WindowInsetsSides.Vertical

@@ -181,10 +181,10 @@ fun SplitLayoutVerticalSimple(
 @Composable
 fun SplitLayoutVertical(
     modifier: Modifier = Modifier,
+    insets: WindowInsets? = null,
     first: @Composable () -> Unit,
     second: @Composable () -> Unit
 ) {
-    val density = LocalDensity.current
     val consumedInsetsFirst = remember { MutablePaddingValues() }
     val consumedInsetsSecond = remember { MutablePaddingValues() }
     Layout(
@@ -210,13 +210,18 @@ fun SplitLayoutVertical(
         val secondMeasurable = measurable.first { it.layoutId == "second" }
         val width = constraints.maxWidth
         val height = constraints.maxHeight
-        val midPoint = width / 2
+        val midPoint = if (insets == null) {
+            width / 2 // Without WindowInsets
+        } else {
+            val leftInset = insets.getLeft(this, layoutDirection)
+            val rightInset = insets.getRight(this, layoutDirection)
+            val widthWoInsets = width - leftInset - rightInset
+            widthWoInsets / 2 + leftInset
+        }
         val firstWidth = midPoint
         val secondWidth = width - midPoint
-        with(density) {
-            consumedInsetsFirst.end = secondWidth.toDp()
-            consumedInsetsSecond.start = firstWidth.toDp()
-        }
+        consumedInsetsFirst.end = secondWidth.toDp()
+        consumedInsetsSecond.start = firstWidth.toDp()
         val firstContraints = constraints.copy(
             maxWidth = firstWidth,
             minWidth = min(firstWidth, constraints.minWidth)
@@ -231,6 +236,69 @@ fun SplitLayoutVertical(
         layout(width, height) {
             firstPlaceable.place(0, 0)
             secondPlaceable.place(firstWidth, 0)
+        }
+    }
+}
+
+@Composable
+fun SplitLayoutHorizontal(
+    modifier: Modifier = Modifier,
+    insets: WindowInsets? = null,
+    first: @Composable () -> Unit,
+    second: @Composable () -> Unit
+) {
+    //val density = LocalDensity.current
+    val consumedInsetsFirst = remember { MutablePaddingValues() }
+    val consumedInsetsSecond = remember { MutablePaddingValues() }
+    Layout(
+        modifier = modifier.clipToBounds(),
+        content = {
+            Box(
+                Modifier
+                    .layoutId("first")
+                    .consumeWindowInsets(consumedInsetsFirst)
+            ) {
+                first()
+            }
+            Box(
+                Modifier
+                    .layoutId("second")
+                    .consumeWindowInsets(consumedInsetsSecond)
+            ) {
+                second()
+            }
+        }
+    ) { measurable, constraints ->
+        val firstMeasurable = measurable.first { it.layoutId == "first" }
+        val secondMeasurable = measurable.first { it.layoutId == "second" }
+        val width = constraints.maxWidth
+        val height = constraints.maxHeight
+        val midPoint = if (insets == null) {
+            height / 2 // Without WindowInsets
+        } else {
+            val topInset = insets.getTop(this)
+            val bottomInset = insets.getBottom(this)
+            val heightWoInsets = height - topInset - bottomInset
+            heightWoInsets / 2 + topInset
+        }
+        val firstHeight = midPoint
+        val secondHeight = height - midPoint
+        consumedInsetsFirst.bottom = secondHeight.toDp()
+        consumedInsetsSecond.top = firstHeight.toDp()
+        val firstContraints = constraints.copy(
+            maxHeight = firstHeight,
+            minHeight = min(firstHeight, constraints.minHeight)
+        )
+        val firstPlaceable = firstMeasurable.measure(firstContraints)
+
+        val secondConstraints = constraints.copy(
+            maxHeight = secondHeight,
+            minHeight = min(secondHeight, constraints.minHeight)
+        )
+        val secondPlaceable = secondMeasurable.measure(secondConstraints)
+        layout(width, height) {
+            firstPlaceable.place(0, 0)
+            secondPlaceable.place(0, firstHeight)
         }
     }
 }

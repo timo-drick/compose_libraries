@@ -50,10 +50,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import de.drick.compose.edgetoedgepreview.layout_experiments.SplitLayoutVerticalNaive
 import de.drick.compose.edgetoedgepreviewlib.CameraCutoutMode
 import de.drick.compose.edgetoedgepreviewlib.EdgeToEdgeTemplate
 import de.drick.compose.edgetoedgepreviewlib.NavigationMode
-import de.drick.compose.edgetoedgepreview.ui.theme.ComposeLibrariesTheme
 import kotlin.math.roundToInt
 
 
@@ -234,7 +234,7 @@ fun TestLandscapeLayoutListContentPadding() {
                         .background(bgStripedGreen)
                         .height(navigationBarPadding.calculateBottomPadding())
                         .fillMaxWidth(),
-                    title = "bottom padding",
+                    title = "Navigation Bar bottom padding",
                     style = MaterialTheme.typography.bodySmall
                 )
             }
@@ -255,16 +255,6 @@ fun TestLandscapeLayoutListContentPadding() {
 @Composable
 fun TestWindowInsetsAll() {
     BaseLayout {
-        Row(Modifier.background(Color.LightGray)) {
-            TestComponentWindowInsets(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(120.dp),
-                title = "App Navigation Bar",
-                rotatedText = true
-            )
-        }
-        /*
         SplitLayoutVerticalNaive(
             modifier = Modifier.background(Color.LightGray),
             first = { modifier ->
@@ -284,7 +274,6 @@ fun TestWindowInsetsAll() {
                     title = "Item list")
             }
         )
-        */
     }
 }
 
@@ -329,7 +318,7 @@ fun ItemListContentPadding(
                 .height(contentPadding.calculateTopPadding())
                 .fillMaxWidth(),
             title = "Item List top padding",
-            style = MaterialTheme.typography.headlineSmall
+            style = MaterialTheme.typography.bodyLarge
         )
         TestComponent(
             modifier = Modifier
@@ -344,7 +333,7 @@ fun ItemListContentPadding(
                 .height(contentPadding.calculateBottomPadding())
                 .fillMaxWidth(),
             title = "Item List bottom padding",
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.headlineSmall
         )
     }
 }

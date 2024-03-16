@@ -1,4 +1,4 @@
-package de.drick.compose.layout
+package de.drick.compose.edgetoedgepreview.layout_experiments
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -11,8 +11,6 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.util.lerp
-import de.drick.compose.edgetoedgepreview.layout_experiments.MutablePaddingValues
-import de.drick.compose.edgetoedgepreviewlib.SmartInsetsConsumer
 import kotlin.math.max
 import kotlin.math.min
 
