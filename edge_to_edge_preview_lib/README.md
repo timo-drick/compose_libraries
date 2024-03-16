@@ -6,9 +6,11 @@ Library which enables you to show WindowInsets in Jetpack Compose previews. Supp
 
 Add dependency:
 
-```kts
+[![Maven Central](https://img.shields.io/maven-central/v/de.drick.compose/edge-to-edge-preview.svg)](https://mvnrepository.com/artifact/de.drick.compose/edge-to-edge-preview)
+
+```kotlin
 dependencies {
-    implementation("de.drick.compose:edge-to-edge-preview:0.2.0")
+    implementation("de.drick.compose:edge-to-edge-preview:<version>")
 }
 ```
 

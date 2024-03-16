@@ -14,8 +14,8 @@ plugins {
 
 val mavenGroupId = "de.drick.compose"
 val mavenArtifactId = "edge-to-edge-preview"
-//val mavenVersion = "0.2.0-SNAPSHOT"
-val mavenVersion = "0.2.0"
+
+val mavenVersion = "0.3.0"
 
 android {
     namespace = "de.drick.compose.edgetoedgepreviewlib"
