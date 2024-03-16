@@ -9,13 +9,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lens
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -28,18 +28,18 @@ enum class CameraCutoutMode {
 @Preview(name = "Portrait")
 @Preview(name = "Landscape", device = "spec:parent=pixel_5,orientation=landscape")
 @Composable
-fun PreviewCameraCutoutVertical() {
+private fun PreviewCameraCutoutVertical() {
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val cutoutSize = 80.dp
     if (isLandscape) {
         CameraCutout(
-            modifier = Modifier.size(cutoutSize, 400.dp),
+            cutoutSize = cutoutSize,
             cutoutMode = CameraCutoutMode.Middle,
             isVertical = true
         )
     } else {
         CameraCutout(
-            modifier = Modifier.size(400.dp, cutoutSize),
+            cutoutSize = cutoutSize,
             cutoutMode = CameraCutoutMode.Middle,
             isVertical = false
         )
@@ -63,15 +63,17 @@ fun CameraCutout(
         }
         Column(
             modifier = modifier
-                .padding(4.dp)
                 .width(cutoutSize)
+                .padding(8.dp)
                 .fillMaxHeight(),
             verticalArrangement = alignment,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
+                modifier = Modifier.fillMaxWidth(),
                 imageVector = Icons.Default.Lens,
                 contentDescription = "Camera lens",
+                contentScale = ContentScale.FillWidth
             )
         }
     } else {
@@ -83,15 +85,17 @@ fun CameraCutout(
         }
         Row(
             modifier = modifier
-                .padding(4.dp)
                 .height(cutoutSize)
+                .padding(8.dp)
                 .fillMaxWidth(),
             horizontalArrangement = alignment,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
+                modifier = Modifier.fillMaxHeight(),
                 imageVector = Icons.Default.Lens,
                 contentDescription = "Camera lens",
+                contentScale = ContentScale.FillHeight
             )
         }
     }

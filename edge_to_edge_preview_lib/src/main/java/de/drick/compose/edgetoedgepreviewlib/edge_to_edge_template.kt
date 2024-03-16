@@ -4,28 +4,28 @@ import android.content.res.Configuration
 import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.zIndex
 import androidx.core.view.WindowInsetsCompat
 
@@ -53,12 +53,6 @@ fun EdgeToEdgeTemplate(
     content: @Composable () -> Unit
 ) {
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val isDarkMode = isSystemInDarkTheme()
-
-    var statusBarHeight by remember { mutableIntStateOf(0) }
-    var navigationBarSize by remember { mutableIntStateOf(0) }
-    var cameraCutoutSize by remember { mutableIntStateOf(0) }
-
     val navigationPos = when {
         navMode == NavigationMode.Gesture -> InsetPos.BOTTOM
         isLandscape && isInvertedOrientation -> InsetPos.LEFT
@@ -72,6 +66,15 @@ fun EdgeToEdgeTemplate(
         else -> InsetPos.TOP
     }
 
+    val isDarkMode = isSystemInDarkTheme()
+    val navigationBarSizeDp = if (navMode == NavigationMode.ThreeButton) 48.dp else 32.dp
+    val cameraCutoutSizeDp = if (cameraCutoutMode != CameraCutoutMode.None) 52.dp else 0.dp
+    val statusBarHeightDp = if (cameraCutoutPos == InsetPos.TOP) max(24.dp, cameraCutoutSizeDp) else 24.dp
+
+    val statusBarHeight = with(LocalDensity.current) { statusBarHeightDp.roundToPx() }
+    val navigationBarSize = with(LocalDensity.current) { navigationBarSizeDp.roundToPx() }
+    val cameraCutoutSize = with(LocalDensity.current) { cameraCutoutSizeDp.roundToPx() }
+
     val windowInsetsState = rememberWindowInsetsState()
     LaunchedEffect(statusBarHeight, navigationBarSize, cameraCutoutSize) {
         windowInsetsState.update {
@@ -81,10 +84,11 @@ fun EdgeToEdgeTemplate(
                 size = statusBarHeight,
                 isVisible = isStatusBarVisible
             )
+            val navSize = if (cameraCutoutPos == InsetPos.BOTTOM && navigationPos == InsetPos.BOTTOM) navigationBarSize + cameraCutoutSize else navigationBarSize
             setInset(
                 pos = navigationPos,
                 type = WindowInsetsCompat.Type.navigationBars(),
-                size = navigationBarSize,
+                size = navSize,
                 isVisible = isNavigationBarVisible
             )
             if (cameraCutoutMode != CameraCutoutMode.None) {
@@ -105,27 +109,33 @@ fun EdgeToEdgeTemplate(
             InsetPos.RIGHT -> AbsoluteAlignment.CenterRight
             InsetPos.BOTTOM -> AbsoluteAlignment.BottomLeft
         }
+        content()
         CameraCutout(
             modifier = Modifier
                 .zIndex(1001f)
                 .align(cameraCutoutAlignment)
-                .then(borderModifier)
-                .onSizeChanged {
-                    cameraCutoutSize = if (isLandscape) it.width else it.height
-                },
+                .then(borderModifier),
             cutoutMode = cameraCutoutMode,
-            isVertical = isLandscape
+            isVertical = isLandscape,
+            cutoutSize = cameraCutoutSizeDp
         )
+        val statusBarCutoutPadding = when {
+            cameraCutoutMode == CameraCutoutMode.Start && cameraCutoutPos == InsetPos.TOP ->
+                PaddingValues(start = cameraCutoutSizeDp)
+            cameraCutoutMode == CameraCutoutMode.End && cameraCutoutPos == InsetPos.TOP ->
+                PaddingValues(end = cameraCutoutSizeDp)
+            else -> PaddingValues()
+        }
         StatusBar(
             modifier = Modifier
                 .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal))
                 .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal))
+                .padding(statusBarCutoutPadding)
+                .height(statusBarHeightDp)
                 .align(Alignment.TopCenter)
                 .zIndex(1000f)
                 .then(borderModifier)
-                .onSizeChanged {
-                    statusBarHeight = it.height
-                }.drawWithContent {
+                .drawWithContent {
                     // draw status bar only when it is visible
                     if (isStatusBarVisible) drawContent()
                 },
@@ -139,6 +149,7 @@ fun EdgeToEdgeTemplate(
             InsetPos.BOTTOM -> AbsoluteAlignment.BottomLeft
         }
         NavigationBar(
+            size = navigationBarSizeDp,
             modifier = Modifier
                 .windowInsetsPadding(
                     WindowInsets.displayCutout.only(
@@ -149,22 +160,13 @@ fun EdgeToEdgeTemplate(
                 .zIndex(1000f)
                 .then(borderModifier)
                 .zIndex(if (isNavigationBarVisible) 1000f else 0f)
-                .onSizeChanged {
-                    val cutoutPadding =
-                        if (cameraCutoutPos == InsetPos.BOTTOM) cameraCutoutSize else 0
-                    navigationBarSize = if (navigationPos == InsetPos.BOTTOM) {
-                        it.height + cutoutPadding
-                    } else {
-                        it.width
-                    }
-                }.drawWithContent {
+                .drawWithContent {
                     // draw navigation bar only when it is visible
-                    if (isStatusBarVisible) drawContent()
+                    if (isNavigationBarVisible) drawContent()
                 },
             isVertical = isLandscape,
             isDarkMode = isDarkMode,
             navMode = navMode
         )
-        content()
     }
 }

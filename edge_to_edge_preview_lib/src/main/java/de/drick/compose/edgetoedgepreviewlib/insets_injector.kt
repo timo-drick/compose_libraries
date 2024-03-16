@@ -4,6 +4,7 @@ package de.drick.compose.edgetoedgepreviewlib
 
 import androidx.compose.foundation.layout.WindowInsetsHolder
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.core.graphics.Insets
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsCompat.Type.InsetsType
@@ -49,5 +50,7 @@ private class WindowInsetsStateImpl(
 }
 
 @Composable
-fun rememberWindowInsetsState(): WindowInsetsState =
-    WindowInsetsStateImpl(WindowInsetsHolder.current())
+fun rememberWindowInsetsState(): WindowInsetsState {
+    val insetsHolder = WindowInsetsHolder.current()
+    return remember { WindowInsetsStateImpl(insetsHolder) }
+}
