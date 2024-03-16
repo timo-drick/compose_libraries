@@ -63,7 +63,8 @@ android {
 dependencies {
 
     implementation("androidx.core:core-ktx:${Versions.coreKtx}")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:${Versions.lifecycle}")
+
+    lintChecks("com.slack.lint.compose:compose-lint-checks:${Versions.composeLintChecks}") // https://slackhq.github.io/compose-lints
 
     //val composeBom = platform("androidx.compose:compose-bom:${Versions.composeBom}")
     //implementation(composeBom)
