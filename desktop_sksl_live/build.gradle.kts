@@ -13,7 +13,6 @@ dependencies {
     implementation(compose.desktop.common)
     implementation(compose.material3)
     implementation(compose.materialIconsExtended)
-    implementation("androidx.compose.material3:material3-adaptive:1.0.0-alpha06")
 
     implementation("io.ktor:ktor-network:${Versions.ktor}")
 }

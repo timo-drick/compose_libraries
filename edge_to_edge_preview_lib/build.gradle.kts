@@ -69,7 +69,7 @@ dependencies {
     //implementation(composeBom)
     // Currently there are problems when using bom.
     // MavenCentral do not validate the lib in this case
-    val composeVersion = "1.6.2"
+    val composeVersion = "1.6.3"
     implementation("androidx.compose.ui:ui:$composeVersion")
     implementation("androidx.compose.foundation:foundation:$composeVersion")
     implementation("androidx.compose.ui:ui-graphics:$composeVersion")
