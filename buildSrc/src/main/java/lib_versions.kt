@@ -1,6 +1,7 @@
 object Versions {
     const val androidPlugin = "8.4.0"
     const val benManesPlugin = "0.51.0"
+    const val vanniktechPlugin = "0.28.0"
     const val spotless = "6.16.0"
     // https://developer.android.com/jetpack/androidx/releases/compose-kotlin#pre-release_kotlin_compatibility
     const val kotlin = "1.9.23"

@@ -88,6 +88,7 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
 }
 
+// https://vanniktech.github.io/gradle-maven-publish-plugin/central/
 /*
 mavenPublishing {
     configure(
@@ -107,6 +108,7 @@ mavenPublishing {
         description.set("""
             Create previews for edge-to-edge designs (also known as WindowInsets) with Jetpack Compose in Android Studio.
         """.trimIndent())
+        url.set("https://github.com/timo-drick/compose_libraries")
         licenses {
             license {
                 name = "The Unlicense"

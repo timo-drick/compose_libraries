@@ -3,8 +3,10 @@ package de.drick.compose.sample.ui
 import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -41,9 +43,15 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.light(
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.TRANSPARENT
+            )
+        )
         LogConfig.isActivated = true //BuildConfig.DEBUG
         setContent {
-            SampleTheme {
+            SampleTheme(darkTheme = false) {
                 MainScreen()
             }
         }
@@ -56,7 +64,8 @@ enum class Screens {
     AnimationShader,
     //FlameShader,
     CurtainTransitionSample,
-    AudioSpectrum
+    AudioSpectrum,
+    LiveEdit
 }
 
 enum class LoadingShader(val src: String, val loopDuration: Int = 2000) {
@@ -151,9 +160,14 @@ fun MainScreen(vm: MainVM = viewModel()) {
                     .padding(padding)
                     .fillMaxSize()
             )
-            Screens.AudioSpectrum -> MainAudioScreen(Modifier
-                .padding(padding)
-                .fillMaxSize())
+            Screens.AudioSpectrum -> MainAudioScreen(
+                Modifier
+                    .padding(padding)
+                    .fillMaxSize())
+            Screens.LiveEdit -> LiveEditShaderScreen(
+                modifier = Modifier.fillMaxSize(),
+                padding = padding
+            )
             //Screens.AttitudeSample -> AttitudeArrow(modifier = Modifier.fillMaxSize())
             null -> {
                 LazyColumn(
@@ -161,7 +175,7 @@ fun MainScreen(vm: MainVM = viewModel()) {
                     contentPadding = padding,
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(Screens.values()) { screen ->
+                    items(Screens.entries) { screen ->
                         if (screen == Screens.CurtainTransitionSample) {
                             ShinyButton(onClick = { vm.setScreen(screen) }) {
                                 Text(text = screen.name)
@@ -172,7 +186,7 @@ fun MainScreen(vm: MainVM = viewModel()) {
                             }
                         }
                     }
-                    items(LoadingShader.values()) { shader ->
+                    items(LoadingShader.entries) { shader ->
                         Button(onClick = {
                             scope.launch {
                                 loadingShader = shader

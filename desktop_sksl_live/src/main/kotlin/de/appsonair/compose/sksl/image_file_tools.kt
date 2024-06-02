@@ -25,8 +25,8 @@ import kotlin.math.roundToInt
 
 fun main() {
     val shaderFile = File("desktop_sksl_live/test.glsl")
-    val outputFolder = File("/home/timo/gitlab/blog/agsl/animation")
-    val size = Size(1024f, 512f)
+    val outputFolder = File("/home/timo/gitlab/blog/agsl/animation/kitt")
+    val size = Size(1920f, 1080f)
     /*createSKSKImage(
         shaderFile = shaderFile,
         outputFolder = outputFolder,
@@ -40,7 +40,8 @@ fun main() {
         steps = steps,
         outputFolder = outputFolder,
         fileName = "kitt_long",
-        size = size
+        size = size,
+        backgroundColor = Color.Black
     )
 }
 
@@ -113,13 +114,42 @@ fun sampleCreateSKSLImageSequence(
     backgroundColor: Color? = null
 ) {
     val shader = RuntimeEffect.makeForShader(shaderFile.readText())
-    val sampleImage = drawToImage(shader, 10.toFloat() / steps.toFloat(), size)
+    //val sampleImage = drawToImage(shader, 10.toFloat() / steps.toFloat(), size)
     /*val withBackground = drawImageToBackground(
         image = sampleImage,
         border = Size(64f, 64f),
         color = backgroundColor
     )*/
-    //saveImage(withBackground, File(outputFolder, "$fileName.webp"))
+
+    for (i in 0 until steps) {
+        val image = drawToImage(shader, i.toFloat() / steps.toFloat(), size)
+        val skiaBitmap = Image.makeFromBitmap(image.asSkiaBitmap())
+        val data =
+            skiaBitmap.encodeToData(EncodedImageFormat.WEBP) ?: error("Unable to create webp image")
+        println("write frame: $i")
+        File(outputFolder, "sequence_$i.webp").writeBytes(data.bytes)
+    }
+}
+
+fun sampleCreateGifAnimation(
+    shaderFile: File,
+    steps: Int,
+    outputFolder: File,
+    fileName: String,
+    size: Size,
+    backgroundColor: Color? = null
+) {
+    val shader = RuntimeEffect.makeForShader(shaderFile.readText())
+    val sampleImage = drawToImage(shader, 10.toFloat() / steps.toFloat(), size)
+    val withBackgroundImage = backgroundColor?.let { bgColor ->
+        drawImageToBackground(
+            image = sampleImage,
+            border = Size(64f, 64f),
+            color = bgColor
+        )
+    }
+    val image = withBackgroundImage ?: sampleImage
+    saveImage(image, File(outputFolder, "$fileName.webp"))
     createGifAnimation(
         file = File(outputFolder, "$fileName.gif"),
         sampleImage = sampleImage,
@@ -140,14 +170,6 @@ fun sampleCreateSKSLImageSequence(
             }
         }
     }
-    /*for (i in 0 until steps) {
-        val image = drawToImage(shader, i.toFloat() / steps.toFloat(), Size(400f, 400f))
-        val skiaBitmap = Image.makeFromBitmap(image.asSkiaBitmap())
-        val data =
-            skiaBitmap.encodeToData(EncodedImageFormat.WEBP) ?: error("Unable to create webp image")
-        println("write frame: $i")
-        File(outputFolder, "sequence_$i.webp").writeBytes(data.bytes)
-    }*/
 }
 
 fun drawToImage(
@@ -165,6 +187,9 @@ fun drawToImage(
     val shader = builder.makeShader()
     val image = ImageBitmap(width = size.width.toInt(), height = size.height.toInt())
     val canvas = Canvas(image)
+    val backgroundPaint = Paint()
+    backgroundPaint.color = Color.Black
+    canvas.drawRect(0f, 0f, size.width, size.height, backgroundPaint)
     val paint = Paint()
     paint.shader = shader
     canvas.drawRect(0f, 0f, size.width, size.height, paint)
