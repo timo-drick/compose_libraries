@@ -116,7 +116,7 @@ fun PieChart(modifier: Modifier) {
                 pieShader.setFloatUniform("translate", translateArray)
                 //noiseShader.setFloatUniform("at[1]", 0f, 1f, 0f)
 
-                multisampleShader.setInputShader("base", pieShader)
+                //multisampleShader.setInputShader("base", pieShader)
 
                 onDrawBehind {
                     drawRect(

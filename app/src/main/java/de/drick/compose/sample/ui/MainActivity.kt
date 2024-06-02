@@ -34,6 +34,7 @@ import de.drick.compose.sample.ui.animation.SHADER_SPINNER_SPHERE_3D
 import de.drick.compose.sample.ui.animation.SHADER_WHEEL
 import de.drick.compose.sample.ui.animation.ShaderAnimation
 import de.drick.compose.sample.ui.animation.ShinyButton
+import de.drick.compose.sample.ui.audio.MainAudioScreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -53,8 +54,9 @@ enum class Screens {
     SimpleShader,
     ChartShader,
     AnimationShader,
-    FlameShader,
-    CurtainTransitionSample
+    //FlameShader,
+    CurtainTransitionSample,
+    AudioSpectrum
 }
 
 enum class LoadingShader(val src: String, val loopDuration: Int = 2000) {
@@ -143,12 +145,15 @@ fun MainScreen(vm: MainVM = viewModel()) {
                     .fillMaxSize(),
                 shaderSrc = rememberAssetString("shader/spinner_sphere_3d.agsl")
             )
-            Screens.FlameShader -> FlameScreen()
+            //Screens.FlameShader -> FlameScreen()
             Screens.CurtainTransitionSample -> TransitionScreen(
                 modifier = Modifier
                     .padding(padding)
                     .fillMaxSize()
             )
+            Screens.AudioSpectrum -> MainAudioScreen(Modifier
+                .padding(padding)
+                .fillMaxSize())
             //Screens.AttitudeSample -> AttitudeArrow(modifier = Modifier.fillMaxSize())
             null -> {
                 LazyColumn(

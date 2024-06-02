@@ -181,12 +181,6 @@ fun ComposeGl(
         null
     }
 
-    /*val k1 = remember(key1) {
-        log("request render")
-        view?.requestRender()
-        null
-    }*/
-
     LifecycleResumeEffect {
         log("resume")
         view?.let {
@@ -198,10 +192,8 @@ fun ComposeGl(
             log("pause")
             view?.onPause()
             renderer.onPause()
-            //renderer.requestGlRender = {}
         }
     }
-    var surfaceView: GLTextureView? = null
     Box(modifier) {
         key(renderer) {
             AndroidView(
@@ -210,9 +202,6 @@ fun ComposeGl(
                     val glSurfaceView = GLTextureView(it, null, renderer.renderer)
                     glSurfaceView.isOpaque = false
                     view = glSurfaceView
-                    /*renderer.requestGlRender = {
-                    glSurfaceView.requestRender()
-                }*/
                     glSurfaceView
                 },
                 update = { _ ->
