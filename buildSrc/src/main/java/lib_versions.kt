@@ -9,7 +9,7 @@ object Versions {
     const val compileSdk = 34
 
     const val coreKtx = "1.13.1"
-    const val lifecycle = "2.7.0"
+    const val lifecycle = "2.8.1"
     const val datastore = "1.1.1"
 
     const val composeLintChecks = "1.3.1"
