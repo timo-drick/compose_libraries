@@ -181,7 +181,7 @@ fun ComposeGl(
         null
     }
 
-    LifecycleResumeEffect {
+    LifecycleResumeEffect(Unit) {
         log("resume")
         view?.let {
             it.onResume()

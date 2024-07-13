@@ -62,6 +62,7 @@ enum class Screens {
     SimpleShader,
     ChartShader,
     AnimationShader,
+    BugDroidShader,
     //FlameShader,
     CurtainTransitionSample,
     AudioSpectrum,
@@ -125,7 +126,7 @@ fun MainScreen(vm: MainVM = viewModel()) {
         containerColor = Color.Transparent,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            TopAppBar(
+            /*TopAppBar(
                 title = {
                     Text(topBarName)
                 },
@@ -140,7 +141,7 @@ fun MainScreen(vm: MainVM = viewModel()) {
                         }
                     }
                 }
-            )
+            )*/
         }
     ) { padding ->
         when (vm.currentScreen) {
@@ -153,6 +154,11 @@ fun MainScreen(vm: MainVM = viewModel()) {
                     .padding(padding)
                     .fillMaxSize(),
                 shaderSrc = rememberAssetString("shader/spinner_sphere_3d.agsl")
+            )
+            Screens.BugDroidShader -> BugDroidView(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
             )
             //Screens.FlameShader -> FlameScreen()
             Screens.CurtainTransitionSample -> TransitionScreen(
