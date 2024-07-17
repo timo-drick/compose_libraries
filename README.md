@@ -7,7 +7,8 @@ Different libraries and a sample app which uses the libraries.
 ## edge-to-edge previews
 Library which enables you to show WindowInsets in Jetpack Compose previews. Supported insets are the status bar, navigation bar and a camera display cutout. It also is able to show many different configurations of the system bars.
 
-[Edge-to-edge previews](edge_to_edge_preview_lib/README.md)
+(Library moved to this dedicated repository)
+[Edge-to-edge previews](https://github.com/timo-drick/compose_edge_to_edge_preview)
 
 # Desktop SKSL live
 
