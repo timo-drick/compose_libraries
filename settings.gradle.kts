@@ -22,5 +22,4 @@ include(":smooth_progress_indication")
 include(":common")
 include(":kdatastore")
 include(":desktop_sksl_live")
-include(":edgetoedgepreview")
-include(":edge_to_edge_preview_lib")
+
